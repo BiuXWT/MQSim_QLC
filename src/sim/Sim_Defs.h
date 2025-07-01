@@ -4,10 +4,15 @@
 #include<cstdint>
 #include<string>
 #include<iostream>
+#include<memory>
 
 typedef uint64_t sim_time_type;
 typedef uint16_t stream_id_type;
 typedef sim_time_type data_timestamp_type;
+
+using sim_time_type_ptr = std::shared_ptr<sim_time_type>;
+using stream_id_type_ptr = std::shared_ptr<stream_id_type>;
+using data_timestamp_type_ptr = std::shared_ptr<data_timestamp_type>;
 
 #define INVALID_TIME 18446744073709551615ULL
 #define T0 0

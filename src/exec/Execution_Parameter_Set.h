@@ -2,6 +2,7 @@
 #define EXECUTION_PARAMETER_SET_H
 
 #include <vector>
+#include <memory>
 #include "Parameter_Set_Base.h"
 #include "Device_Parameter_Set.h"
 #include "IO_Flow_Parameter_Set.h"
@@ -16,5 +17,7 @@ public:
 	void XML_serialize(Utils::XmlWriter& xmlwriter);
 	void XML_deserialize(rapidxml::xml_node<> *node);
 };
+
+using Execution_Parameter_Set_Ptr = std::shared_ptr<Execution_Parameter_Set>;
 
 #endif // !EXECUTION_PARAMETER_SET_H

@@ -68,6 +68,21 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 			average_flash_read_latency = (read_latencies[0] + read_latencies[1] + read_latencies[2]) / 3;
 			average_flash_write_latency = (write_latencies[0] + write_latencies[1] + write_latencies[2]) / 3;
 			break;
+		case Flash_Technology_Type::QLC:
+			read_latencies = new sim_time_type[4];
+			read_latencies[0] = parameters->Flash_Parameters.Page_Read_Latency_LSB;
+			read_latencies[1] = parameters->Flash_Parameters.Page_Read_Latency_CSB;
+			read_latencies[2] = parameters->Flash_Parameters.Page_Read_Latency_MSB;
+			read_latencies[3] = parameters->Flash_Parameters.Page_Read_Latency_WSB;
+			write_latencies = new sim_time_type[4];
+			write_latencies[0] = parameters->Flash_Parameters.Page_Program_Latency_LSB;
+			write_latencies[1] = parameters->Flash_Parameters.Page_Program_Latency_CSB;
+			write_latencies[2] = parameters->Flash_Parameters.Page_Program_Latency_MSB;
+			write_latencies[3] = parameters->Flash_Parameters.Page_Program_Latency_WSB;
+			average_flash_read_latency = (read_latencies[0] + read_latencies[1] + read_latencies[2] + read_latencies[3]) / 4;
+			average_flash_write_latency = (write_latencies[0] + write_latencies[1] + write_latencies[2] + write_latencies[3]) / 4;
+			break;
+
 		default:
 			throw std::invalid_argument("The specified flash technologies is not supported");
 		}

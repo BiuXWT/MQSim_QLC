@@ -28,6 +28,9 @@
     <Filter Include="utils\rapidxml">
       <UniqueIdentifier>{338b4a59-3227-4ff1-be87-2a60c6309aa6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="configs">
+      <UniqueIdentifier>{8cbc2ca2-d829-4c93-a930-bf1a993e3b47}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -474,5 +477,21 @@
     <ClInclude Include="src\ssd\Host_Interface_NVMe_Priorities.h">
       <Filter>ssd</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="ssdconfig.xml">
+      <Filter>configs</Filter>
+    </Xml>
+    <Xml Include="workload.xml">
+      <Filter>configs</Filter>
+    </Xml>
+    <Xml Include="myworkload.xml">
+      <Filter>configs</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README_dual.pdf">
+      <Filter>configs</Filter>
+    </None>
   </ItemGroup>
 </Project>

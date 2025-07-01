@@ -3,14 +3,16 @@
 #include "../sim/Engine.h"
 #include "Flash_Parameter_Set.h"
 
-Flash_Technology_Type Flash_Parameter_Set::Flash_Technology = Flash_Technology_Type::MLC;
+Flash_Technology_Type Flash_Parameter_Set::Flash_Technology = Flash_Technology_Type::QLC;
 NVM::FlashMemory::Command_Suspension_Mode Flash_Parameter_Set::CMD_Suspension_Support = NVM::FlashMemory::Command_Suspension_Mode::ERASE;
 sim_time_type Flash_Parameter_Set::Page_Read_Latency_LSB = 75000;
 sim_time_type Flash_Parameter_Set::Page_Read_Latency_CSB = 75000;
 sim_time_type Flash_Parameter_Set::Page_Read_Latency_MSB = 75000;
+sim_time_type Flash_Parameter_Set::Page_Read_Latency_WSB = 75000;
 sim_time_type Flash_Parameter_Set::Page_Program_Latency_LSB = 750000;
 sim_time_type Flash_Parameter_Set::Page_Program_Latency_CSB = 750000;
 sim_time_type Flash_Parameter_Set::Page_Program_Latency_MSB = 750000;
+sim_time_type Flash_Parameter_Set::Page_Program_Latency_WSB = 750000;
 sim_time_type Flash_Parameter_Set::Block_Erase_Latency = 3800000;//Block erase latency in nano-seconds
 unsigned int Flash_Parameter_Set::Block_PE_Cycles_Limit = 10000;
 sim_time_type Flash_Parameter_Set::Suspend_Erase_Time = 700000;//in nano-seconds
@@ -20,7 +22,7 @@ unsigned int Flash_Parameter_Set::Plane_No_Per_Die = 2;
 unsigned int Flash_Parameter_Set::Block_No_Per_Plane = 2048;
 unsigned int Flash_Parameter_Set::Page_No_Per_Block = 256;//Page no per block
 unsigned int Flash_Parameter_Set::Page_Capacity = 8192;//Flash page capacity in bytes
-unsigned int Flash_Parameter_Set::Page_Metadat_Capacity = 1872;//Flash page capacity in bytes
+unsigned int Flash_Parameter_Set::Page_Metadat_Capacity = 448;//Flash page capacity in bytes
 
 void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 {
@@ -39,6 +41,9 @@ void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 			break;
 		case Flash_Technology_Type::TLC:
 			val = "TLC";
+			break;
+		case Flash_Technology_Type::QLC:
+			val = "QLC";
 			break;
 		default:
 			break;
@@ -76,6 +81,10 @@ void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	val = std::to_string(Page_Read_Latency_MSB);
 	xmlwriter.Write_attribute_string(attr, val);
 
+	attr = "Page_Read_Latency_WSB";
+	val = std::to_string(Page_Read_Latency_WSB);
+	xmlwriter.Write_attribute_string(attr, val);
+
 	attr = "Page_Program_Latency_LSB";
 	val = std::to_string(Page_Program_Latency_LSB);
 	xmlwriter.Write_attribute_string(attr, val);
@@ -86,6 +95,10 @@ void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 
 	attr = "Page_Program_Latency_MSB";
 	val = std::to_string(Page_Program_Latency_MSB);
+	xmlwriter.Write_attribute_string(attr, val);
+
+	attr = "Page_Program_Latency_WSB";
+	val = std::to_string(Page_Program_Latency_WSB);
 	xmlwriter.Write_attribute_string(attr, val);
 
 	attr = "Block_Erase_Latency";
@@ -144,6 +157,8 @@ void Flash_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 					Flash_Technology = Flash_Technology_Type::MLC;
 				else if (strcmp(val.c_str(), "TLC") == 0)
 					Flash_Technology = Flash_Technology_Type::TLC;
+				else if (strcmp(val.c_str(), "QLC") == 0)
+					Flash_Technology = Flash_Technology_Type::QLC;
 				else PRINT_ERROR("Unknown flash technology type specified in the input file")
 			} else if (strcmp(param->name(), "CMD_Suspension_Support") == 0) {
 				std::string val = param->value();

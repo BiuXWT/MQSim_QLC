@@ -27,7 +27,7 @@ To learn more about MQSim, please refer to the slides and talk below:
 ## Usage in Linux
 Run following commands:
 	
-```
+```bash
 $ make
 $ ./MQSim -i <SSD Configuration File> -w <Workload Definition File>
 ```
@@ -41,7 +41,7 @@ $ ./MQSim -i <SSD Configuration File> -w <Workload Definition File>
 
 Example command line execution:
 
-```
+```bash
 $ MQSim.exe -i <SSD Configuration File> -w <Workload Definition File> 
 ```
 
@@ -102,19 +102,21 @@ You can specify your preferred SSD configuration in the XML format. If the SSD c
 3. **Page_Read_Latency_LSB:** the latency of reading LSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
 4. **Page_Read_Latency_CSB:** the latency of reading CSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
 5. **Page_Read_Latency_MSB:** the latency of reading MSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
-6. **Page_Program_Latency_LSB:** the latency of programming LSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
-7. **Page_Program_Latency_CSB:** the latency of programming CSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
-8. **Page_Program_Latency_MSB:** the latency of programming MSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
-9. **Block_Erase_Latency:** the latency of erasing a flash block in nanoseconds. Range = {all positive integer values}.
-10. **Block_PE_Cycles_Limit:** the PE limit of each flash block. Range = {all positive integer values}.
-11. **Suspend_Erase_Time:** the time taken to suspend an ongoing erase operation in nanoseconds. Range = {all positive integer values}.
-12. **Suspend_Program_Time:** the time taken to suspend an ongoing program operation in nanoseconds. Range = {all positive integer values}.
-13. **Die_No_Per_Chip:** the number of dies in each flash chip. Range = {all positive integer values}.
-14. **Plane_No_Per_Die:** the number of planes in each die. Range = {all positive integer values}.
-15. **Block_No_Per_Plane:** the number of flash blocks in each plane. Range = {all positive integer values}.
-16. **Page_No_Per_Block:** the number of physical pages in each flash block. Range = {all positive integer values}.
-17. **Page_Capacity:** the size of each physical flash page in bytes. Range = {all positive integer values}.
-18. **Page_Metadat_Capacity:** the size of the metadata area of each physical flash page in bytes. Range = {all positive integer values}.
+6. **Page_Read_Latency_WSB:** the latency of reading WSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
+7. **Page_Program_Latency_LSB:** the latency of programming LSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
+8. **Page_Program_Latency_CSB:** the latency of programming CSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
+9. **Page_Program_Latency_MSB:** the latency of programming MSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
+10. **Page_Program_Latency_WSB:** the latency of programming WSB bits of flash memory cells in nanoseconds. Range = {all positive integer values}.
+11. **Block_Erase_Latency:** the latency of erasing a flash block in nanoseconds. Range = {all positive integer values}.
+12. **Block_PE_Cycles_Limit:** the PE limit of each flash block. Range = {all positive integer values}.
+13. **Suspend_Erase_Time:** the time taken to suspend an ongoing erase operation in nanoseconds. Range = {all positive integer values}.
+14. **Suspend_Program_Time:** the time taken to suspend an ongoing program operation in nanoseconds. Range = {all positive integer values}.
+15. **Die_No_Per_Chip:** the number of dies in each flash chip. Range = {all positive integer values}.
+16. **Plane_No_Per_Die:** the number of planes in each die. Range = {all positive integer values}.
+17. **Block_No_Per_Plane:** the number of flash blocks in each plane. Range = {all positive integer values}.
+18. **Page_No_Per_Block:** the number of physical pages in each flash block. Range = {all positive integer values}.
+19. **Page_Capacity:** the size of each physical flash page in bytes. Range = {all positive integer values}.
+20. **Page_Metadat_Capacity:** the size of the metadata area of each physical flash page in bytes. Range = {all positive integer values}.
 
 
 ## MQSim Workload Definition
@@ -123,7 +125,7 @@ You can define your preferred set of workloads in the XML format. If the specifi
 1. The entire workload definitions should be embedded within <MQSim_IO_Scenarios></MQSim_IO_Scenarios> tags. You can define different sets of *I/O scenarios* within these tags. MQSim simulates each I/O scenario separately.
 
 2. We call a set of workloads that should be executed together, an *I/O scenario*. An I/O scenario is defined within the <IO_Scenario></IO_Scenario> tags. For example, two different I/O scenarios are defined in the workload definition file in the following way:
-```
+```xml
 <MQSim_IO_Scenarios>
 	<IO_Scenario>
 	.............

@@ -3,6 +3,7 @@
 #include <ctime>
 #include <string>
 #include <cstring>
+#include <memory>
 #include "ssd/SSD_Defs.h"
 #include "exec/Execution_Parameter_Set.h"
 #include "exec/SSD_Device.h"
@@ -35,7 +36,7 @@ void command_line_args(char* argv[], string& input_file_path, string& workload_f
 	}
 }
 
-void read_configuration_parameters(const string ssd_config_file_path, Execution_Parameter_Set* exec_params)
+void read_configuration_parameters(const string ssd_config_file_path, Execution_Parameter_Set_Ptr p_exec_params)
 {
 	ifstream ssd_config_file;
 	ssd_config_file.open(ssd_config_file_path.c_str());
@@ -48,7 +49,7 @@ void read_configuration_parameters(const string ssd_config_file_path, Execution_
 		Utils::XmlWriter xmlwriter;
 		string tmp;
 		xmlwriter.Open(ssd_config_file_path.c_str());
-		exec_params->XML_serialize(xmlwriter);
+		p_exec_params->XML_serialize(xmlwriter);
 		xmlwriter.Close();
 		PRINT_MESSAGE("[====================] Done!\n")
 	} else {
@@ -63,8 +64,8 @@ void read_configuration_parameters(const string ssd_config_file_path, Execution_
 			doc.parse<0>(temp_string);
 			rapidxml::xml_node<> *mqsim_config = doc.first_node("Execution_Parameter_Set");
 			if (mqsim_config != NULL) {
-				exec_params = new Execution_Parameter_Set;
-				exec_params->XML_deserialize(mqsim_config);
+				p_exec_params = std::make_shared<Execution_Parameter_Set>();
+				p_exec_params->XML_deserialize(mqsim_config);
 			} else {
 				PRINT_MESSAGE("Error in the SSD configuration file!")
 				PRINT_MESSAGE("Using MQSim's default configuration.")
@@ -76,7 +77,7 @@ void read_configuration_parameters(const string ssd_config_file_path, Execution_
 			Utils::XmlWriter xmlwriter;
 			string tmp;
 			xmlwriter.Open(ssd_config_file_path.c_str());
-			exec_params->XML_serialize(xmlwriter);
+			p_exec_params->XML_serialize(xmlwriter);
 			xmlwriter.Close();
 			PRINT_MESSAGE("[====================] Done!\n")
 		}
@@ -268,8 +269,9 @@ int main(int argc, char* argv[])
 
 	command_line_args(argv, ssd_config_file_path, workload_defs_file_path);
 
-	Execution_Parameter_Set* exec_params = new Execution_Parameter_Set;
-	read_configuration_parameters(ssd_config_file_path, exec_params);
+	//Execution_Parameter_Set* exec_params = new Execution_Parameter_Set;
+	Execution_Parameter_Set_Ptr p_exec_params = std::make_shared<Execution_Parameter_Set>();
+	read_configuration_parameters(ssd_config_file_path, p_exec_params);
 	std::vector<std::vector<IO_Flow_Parameter_Set*>*>* io_scenarios = read_workload_definitions(workload_defs_file_path);
 
 	int cntr = 1;
@@ -283,14 +285,14 @@ int main(int argc, char* argv[])
 		//The simulator should always be reset, before starting the actual simulation
 		Simulator->Reset();
 
-		exec_params->Host_Configuration.IO_Flow_Definitions.clear();
+		p_exec_params->Host_Configuration.IO_Flow_Definitions.clear();
 		for (auto io_flow_def = (*io_scen)->begin(); io_flow_def != (*io_scen)->end(); io_flow_def++) {
-			exec_params->Host_Configuration.IO_Flow_Definitions.push_back(*io_flow_def);
+			p_exec_params->Host_Configuration.IO_Flow_Definitions.push_back(*io_flow_def);
 		}
 
-		SSD_Device ssd(&exec_params->SSD_Device_Configuration, &exec_params->Host_Configuration.IO_Flow_Definitions);//Create SSD_Device based on the specified parameters
-		exec_params->Host_Configuration.Input_file_path = workload_defs_file_path.substr(0, workload_defs_file_path.find_last_of("."));//Create Host_System based on the specified parameters
-		Host_System host(&exec_params->Host_Configuration, exec_params->SSD_Device_Configuration.Enabled_Preconditioning, ssd.Host_interface);
+		SSD_Device ssd(&p_exec_params->SSD_Device_Configuration, &p_exec_params->Host_Configuration.IO_Flow_Definitions);//Create SSD_Device based on the specified parameters
+		p_exec_params->Host_Configuration.Input_file_path = workload_defs_file_path.substr(0, workload_defs_file_path.find_last_of("."));//Create Host_System based on the specified parameters
+		Host_System host(&p_exec_params->Host_Configuration, p_exec_params->SSD_Device_Configuration.Enabled_Preconditioning, ssd.Host_interface);
 		host.Attach_ssd_device(&ssd);
 
 		Simulator->Start_simulation();
