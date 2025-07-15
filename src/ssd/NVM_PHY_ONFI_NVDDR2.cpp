@@ -1,10 +1,11 @@
-#include <stdexcept>
+﻿#include <stdexcept>
 #include "../sim/Engine.h"
 #include "NVM_PHY_ONFI_NVDDR2.h"
 #include "Stats.h"
 
 namespace SSD_Components {
 	/*hack: using this style to emulate event/delegate*/
+    /*技巧: 使用这种风格来模拟事件/代理*/
 	NVM_PHY_ONFI_NVDDR2* NVM_PHY_ONFI_NVDDR2::_my_instance;
 
 	NVM_PHY_ONFI_NVDDR2::NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
@@ -137,7 +138,8 @@ namespace SSD_Components {
 		DieBookKeepingEntry* dieBKE = &chipBKE->Die_book_keeping_records[transaction_list.front()->Address.DieID];
 
 		/*If this is not a die-interleaved command execution, and the channel is already busy,
-		* then something illegarl is happening*/
+		* then something illegarl is happening
+		如果这不是一个die级别交错执行的命令，并且通道已经繁忙，那么一定是发生了一些非法的事情*/
 		if (target_channel->GetStatus() == BusChannelStatus::BUSY && chipBKE->OngoingDieCMDTransfers.size() == 0) {
 			PRINT_ERROR("Bus " << target_channel->ChannelID << ": starting communication on a busy flash channel!");
 		}
@@ -155,7 +157,7 @@ namespace SSD_Components {
 						suspendTime = target_channel->EraseSuspendCommandTime + targetChip->GetSuspendEraseTime();
 						break;
 					default:
-						PRINT_ERROR("Read suspension is not supported!")
+						PRINT_ERROR("Read suspension is not supported!") //suspension:暂停, 中止
 				}
 				targetChip->Suspend(transaction_list.front()->Address.DieID);
 				dieBKE->PrepareSuspend();

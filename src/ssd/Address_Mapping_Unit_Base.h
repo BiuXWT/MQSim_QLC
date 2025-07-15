@@ -1,4 +1,4 @@
-#ifndef ADDRESS_MAPPING_UNIT_BASE_H
+﻿#ifndef ADDRESS_MAPPING_UNIT_BASE_H
 #define ADDRESS_MAPPING_UNIT_BASE_H
 
 #include "../sim/Sim_Object.h"
@@ -42,17 +42,17 @@ namespace SSD_Components
 			double Overprovisioning_ratio, CMT_Sharing_Mode sharing_mode = CMT_Sharing_Mode::SHARED, bool fold_large_addresses = true);
 		virtual ~Address_Mapping_Unit_Base();
 
-		//Functions used for preconditioning
+		//用于预处理的功能
 		virtual void Allocate_address_for_preconditioning(const stream_id_type stream_id, std::map<LPA_type, page_status_type>& lpa_list, std::vector<double>& steady_state_distribution) = 0;
-		virtual int Bring_to_CMT_for_preconditioning(stream_id_type stream_id, LPA_type lpa) = 0;//Used for warming up the cached mapping table during preconditioning
-		virtual void Store_mapping_table_on_flash_at_start() = 0; //It should only be invoked at the begenning of the simulation to store mapping table entries on the flash space
+		virtual int Bring_to_CMT_for_preconditioning(stream_id_type stream_id, LPA_type lpa) = 0;//用于在预处理期间加热缓存映射表
+		virtual void Store_mapping_table_on_flash_at_start() = 0; //它应该仅在模拟开始时调用，以便在闪存空间中存储映射表条目。
 
 		
-		virtual unsigned int Get_cmt_capacity() = 0;//Returns the maximum number of entries that could be stored in the cached mapping table
+		virtual unsigned int Get_cmt_capacity() = 0;//返回可以存储在缓存映射表中的最大条目数
 		virtual unsigned int Get_current_cmt_occupancy_for_stream(stream_id_type stream_id) = 0;
-		virtual LPA_type Get_logical_pages_count(stream_id_type stream_id) = 0; //Returns the number of logical pages allocated to an I/O stream
+		virtual LPA_type Get_logical_pages_count(stream_id_type stream_id) = 0; //返回分配给 I/O 流的逻辑页数
 		unsigned int Get_no_of_input_streams() { return no_of_input_streams; }
-		bool Is_ideal_mapping_table(); //Checks if ideal mapping table is enabled in which all address translations entries are always in CMT (i.e., CMT is infinite in size) and thus all adddress translation requests are always successful
+		bool Is_ideal_mapping_table(); //检查理想映射表是否启用，其中所有地址翻译条目始终在 CMT 中（即，CMT 的大小是无限的），因此所有地址翻译请求总是成功的。
 
 		//Address translation functions
 		virtual void Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList) = 0;
@@ -71,20 +71,25 @@ namespace SSD_Components
 		 location, no new request should be allowed to the moving LPA. Otherwise, the system may become inconsistent.
 
 		 GC starts on a physical block ------>  set barrier for physical block  ----(LPAs are read from flash)----->  set barrier for LPA  -----(LPA is written into its new location)------>  remove barrier for LPA
+		
+		 这些是用于垃圾回收和磨损均衡执行的系统状态一致性控制函数。
+		 一旦 GC_and_WL_Unit_Base 开始将逻辑页面 (LPA) 从一个物理位置移动到另一个物理位置，
+		 就不应允许对正在移动的 LPA 发出新的请求。否则，系统可能会变得不一致。
+		 垃圾回收开始于一个物理块 ------> 为物理块设置屏障 ----(从闪存中读取 LPA)-----> 为 LPA 设置屏障 -----(LPA 被写入其新位置)------> 移除 LPA 的屏障。
 
 		**********************************************************************************************************************/
-		virtual void Set_barrier_for_accessing_physical_block(const NVM::FlashMemory::Physical_Page_Address& block_address) = 0;//At the very beginning of executing a GC request, the GC target physical block (that is selected for erase) should be protected by a barrier. The LPAs within this block are unknown until the content of the physical pages within the block are read one-by-one. Therfore, at the start of the GC execution, the barrier is set for the physical block. Later, when the LPAs are read from the physical block, the above functions are used to lock each of the LPAs.
-		virtual void Set_barrier_for_accessing_lpa(const stream_id_type stream_id, const LPA_type lpa) = 0; //It sets a barrier for accessing an LPA, when the GC unit (i.e., GC_and_WL_Unit_Base) starts moving an LPA from one physical page to another physical page. This type of barrier is pretty much like a memory barrier in CPU, i.e., all accesses to the lpa that issued before setting the barrier still can be executed, but no new access is allowed.
-		virtual void Set_barrier_for_accessing_mvpn(const stream_id_type stream_id, const MVPN_type mvpn) = 0; //It sets a barrier for accessing an MVPN, when the GC unit(i.e., GC_and_WL_Unit_Base) starts moving an mvpn from one physical page to another physical page. This type of barrier is pretty much like a memory barrier in CPU, i.e., all accesses to the lpa that issued before setting the barrier can be executed, but no new access is allowed.
-		virtual void Remove_barrier_for_accessing_lpa(const stream_id_type stream_id, const LPA_type lpa) = 0; //Removes the barrier that has already been set for accessing an LPA (i.e., the GC_and_WL_Unit_Base unit successfully finished relocating LPA from one physical location to another physical location).
-		virtual void Remove_barrier_for_accessing_mvpn(const stream_id_type stream_id, const MVPN_type mvpn) = 0; //Removes the barrier that has already been set for accessing an MVPN (i.e., the GC_and_WL_Unit_Base unit successfully finished relocating MVPN from one physical location to another physical location).
-		virtual void Start_servicing_writes_for_overfull_plane(const NVM::FlashMemory::Physical_Page_Address plane_address) = 0;//This function is invoked when GC execution is finished on a plane and the plane has enough number of free pages to service writes
+		virtual void Set_barrier_for_accessing_physical_block(const NVM::FlashMemory::Physical_Page_Address& block_address) = 0;//在执行垃圾回收请求的最开始阶段，GC目标物理块（即选定的待擦除块）应该通过一个屏障进行保护。这个块内的逻辑页地址（LPA）在读取物理页面内容之前是未知的。因此，在垃圾回收执行开始时，为物理块设置了屏障。后来，当从物理块中读取逻辑页地址时，将使用上述功能来锁定每个逻辑页地址
+		virtual void Set_barrier_for_accessing_lpa(const stream_id_type stream_id, const LPA_type lpa) = 0; //当GC单元（即GC_and_WL_Unit_Base）开始将LPA从一个物理页面移动到另一个物理页面时，它为访问LPA设置了一个障碍。这种障碍与CPU中的内存障碍非常相似，即在设置障碍之前发出的所有对lpa的访问仍然可以执行，但不允许新的访问。
+		virtual void Set_barrier_for_accessing_mvpn(const stream_id_type stream_id, const MVPN_type mvpn) = 0; //当GC单元（即GC_and_WL_Unit_Base）开始将一个MVPN从一个物理页面移动到另一个物理页面时，它为访问MVPN设置了一个障碍。这种类型的障碍很像CPU中的内存障碍，即在设置障碍之前发出的所有对lpa的访问可以执行，但不允许任何新的访问。
+		virtual void Remove_barrier_for_accessing_lpa(const stream_id_type stream_id, const LPA_type lpa) = 0; //消除了已设定的访问 LPA 的障碍（即，GC_and_WL_Unit_Base 单元成功将 LPA 从一个物理位置迁移到另一个物理位置）。
+		virtual void Remove_barrier_for_accessing_mvpn(const stream_id_type stream_id, const MVPN_type mvpn) = 0; //消除了已设定的访问MVPN的障碍（即，GC_and_WL_Unit_Base单元成功完成了将MVPN从一个物理位置迁移到另一个物理位置）。
+		virtual void Start_servicing_writes_for_overfull_plane(const NVM::FlashMemory::Physical_Page_Address plane_address) = 0;//当垃圾收集（GC）执行完成且该平面有足够数量的空闲页来处理写入时，将调用此功能。
 	protected:
 		FTL* ftl;
 		NVM_PHY_ONFI* flash_controller;
 		Flash_Block_Manager_Base* block_manager;
 		CMT_Sharing_Mode sharing_mode;
-		bool ideal_mapping_table;//If mapping is ideal, then all the mapping entries are found in the DRAM and there is no need to read mapping entries from flash
+		bool ideal_mapping_table;//如果映射是理想的，那么所有的映射条目都可以在DRAM中找到，不需要从闪存中读取映射条目。
 		unsigned int no_of_input_streams;
 		LHA_type max_logical_sector_address;
 		unsigned int total_logical_pages_no = 0;

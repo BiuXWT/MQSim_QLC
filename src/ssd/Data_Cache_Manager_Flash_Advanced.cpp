@@ -183,12 +183,38 @@ namespace SSD_Components
 				break;
 		}
 	}
-
+	std::string to_string(Transaction_Type type) {
+		switch (type) {
+		case Transaction_Type::READ:    return "READ";
+		case Transaction_Type::WRITE:   return "WRITE";
+		case Transaction_Type::ERASE:   return "ERASE";
+		case Transaction_Type::UNKOWN: return "UNKOWN";
+		default:                        return "INVALID";
+		}
+	}
+	std::string to_string(Transaction_Source_Type type) {
+		switch (type) {
+		case Transaction_Source_Type::USERIO: return "USERIO";
+		case Transaction_Source_Type::CACHE: return "CACHE";
+		case Transaction_Source_Type::GC_WL: return "GC_WL";
+		case Transaction_Source_Type::MAPPING: return "MAPPING";
+		}
+	}
 	void Data_Cache_Manager_Flash_Advanced::process_new_user_request(User_Request* user_request)
 	{
 		//This condition shouldn't happen, but we check it
 		if (user_request->Transaction_list.size() == 0) {
 			return;
+		}
+		//auto sqe = dynamic_cast<Submission_Queue_Entry*>(user_request->IO_command_info);
+		DEBUG_BIU((user_request->Type == UserRequestType::READ ? "READ" : "WRITE") << "#LBA:" << user_request->Start_LBA 
+			<< "#size:" << user_request->Size_in_byte << "bytes==" << user_request->SizeInSectors << "sectors" 
+			<< "#data:" << user_request->Data
+			<<"#stream_id:"<<user_request->Stream_id<<"#id:"<<user_request->ID);
+		
+		for (auto it = user_request->Transaction_list.begin(); it != user_request->Transaction_list.end(); it++) {
+			auto tr = (*it);
+			DEBUG_BIU("tr_type="<<to_string(tr->Type)<<";tr_src_type="<<to_string(tr->Source))
 		}
 
 		if (user_request->Type == UserRequestType::READ) {

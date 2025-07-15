@@ -30,6 +30,7 @@ namespace MQSimEngine
 		if (_ObjectList.find(obj->ID()) != _ObjectList.end()) {
 			throw std::invalid_argument("Duplicate object key: " + obj->ID());
 		}
+		DEBUG("engine add obj[" << obj->ID() << "]")
 		_ObjectList.insert(std::pair<sim_object_id_type, Sim_Object*>(obj->ID(), obj));
 	}
 	
@@ -74,10 +75,12 @@ namespace MQSimEngine
 		for (std::unordered_map<sim_object_id_type, Sim_Object*>::iterator obj = _ObjectList.begin();
 			obj != _ObjectList.end();
 			++obj) {
+			DEBUG(obj->second->ID() << ":start simulation");
 			obj->second->Start_simulation();
 		}
 		
 		Sim_Event* ev = NULL;
+		unsigned cnt = 0;
 		while (true) {
 			if (_EventList->Count == 0 || stop) {
 				break;
@@ -89,6 +92,14 @@ namespace MQSimEngine
 			_sim_time = ev->Fire_time;
 
 			while (ev != NULL) {
+				if (ev->Target_sim_object->ID().find("PHY") != std::string::npos) {
+					DEBUG_BIU(cnt <<":" << ev->Target_sim_object->ID())
+						cnt++;
+					if (ev->Ignore) DEBUG_BIU("ignore")
+						if (cnt == 500) {
+							Stop_simulation();
+						}
+				}
 				if(!ev->Ignore) {
 					ev->Target_sim_object->Execute_simulator_event(ev);
 				}
@@ -118,7 +129,10 @@ namespace MQSimEngine
 	Sim_Event* Engine::Register_sim_event(sim_time_type fireTime, Sim_Object* targetObject, void* parameters, int type)
 	{
 		Sim_Event* ev = new Sim_Event(fireTime, targetObject, parameters, type);
-		DEBUG("RegisterEvent " << fireTime << " " << targetObject)
+		DEBUG("RegisterEvent " << "firetime:" << fireTime << " " << targetObject->ID());
+		if (targetObject->ID().find("PHY") !=std::string::npos) {
+			DEBUG_BIU("RegisterEvent " << "firetime:" << fireTime << " " << targetObject->ID());
+		}
 		_EventList->Insert_sim_event(ev);
 		return ev;
 	}

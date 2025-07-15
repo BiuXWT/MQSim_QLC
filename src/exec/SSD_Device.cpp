@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <vector>
 #include <stdexcept>
 #include <ctime>
@@ -135,7 +136,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		Simulator->AddObject(ftl);
 		device->Firmware = ftl;
 
-		//Step 5: create TSU
+		//Step 5: create TSU(Transaction Scheduling Unit)事务调度单元
 		SSD_Components::TSU_Base *tsu;
 		bool erase_suspension = false, program_suspension = false;
 		if (parameters->Flash_Parameters.CMD_Suspension_Support == NVM::FlashMemory::Command_Suspension_Mode::PROGRAM)
@@ -351,7 +352,8 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 																		parameters->Data_Cache_Capacity, parameters->Data_Cache_DRAM_Row_Size, parameters->Data_Cache_DRAM_Data_Rate,
 																		parameters->Data_Cache_DRAM_Data_Busrt_Size, parameters->Data_Cache_DRAM_tRCD, parameters->Data_Cache_DRAM_tCL, parameters->Data_Cache_DRAM_tRP,
 																		caching_modes, parameters->Data_Cache_Sharing_Mode, (unsigned int)io_flows->size(),
-																		parameters->Flash_Parameters.Page_Capacity / SECTOR_SIZE_IN_BYTE, parameters->Flash_Channel_Count * parameters->Chip_No_Per_Channel * parameters->Flash_Parameters.Die_No_Per_Chip * parameters->Flash_Parameters.Plane_No_Per_Die * parameters->Flash_Parameters.Page_Capacity / SECTOR_SIZE_IN_BYTE);
+																		parameters->Flash_Parameters.Page_Capacity / SECTOR_SIZE_IN_BYTE, 
+																		parameters->Flash_Channel_Count * parameters->Chip_No_Per_Channel * parameters->Flash_Parameters.Die_No_Per_Chip * parameters->Flash_Parameters.Plane_No_Per_Die * parameters->Flash_Parameters.Page_Capacity / SECTOR_SIZE_IN_BYTE);
 
 			break;
 		default:

@@ -91,6 +91,9 @@ namespace NVM
 					//From: Yaakobi et al., "Characterization and Error-Correcting Codes for TLC Flash Memories", ICNC 2012
 					latencyType = (pageID <= 5) ? 0 : ((pageID <= 7) ? 1 : (((pageID - 8) >> 1) % 3));;
 				}
+				else if (flash_technology == Flash_Technology_Type::QLC) {
+					latencyType = pageID % 4;
+				}
 
 				switch (CMDCode)
 				{

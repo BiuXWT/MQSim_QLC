@@ -37,6 +37,7 @@ namespace Host_Components
 
 	class IO_Flow_Base;
 	class PCIe_Root_Complex;
+	// Sata Host Bus Adapter. simulation of host sata controller behavior
 	class SATA_HBA : MQSimEngine::Sim_Object
 	{
 	public:

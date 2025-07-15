@@ -1,4 +1,4 @@
-#ifndef ADDRESS_MAPPING_UNIT_PAGE_LEVEL
+﻿#ifndef ADDRESS_MAPPING_UNIT_PAGE_LEVEL
 #define ADDRESS_MAPPING_UNIT_PAGE_LEVEL
 
 #include <unordered_map>
@@ -30,7 +30,7 @@ namespace SSD_Components
 		unsigned long long WrittenStateBitmap;
 		bool Dirty;
 		CMTEntryStatus Status;
-		std::list<std::pair<LPA_type, CMTSlotType*>>::iterator listPtr;//used for fast implementation of LRU
+		std::list<std::pair<LPA_type, CMTSlotType*>>::iterator listPtr;//用于快速实现LRU
 		stream_id_type Stream_id;
 	};
 
@@ -69,7 +69,13 @@ namespace SSD_Components
 	* (e.g., multi-streamed SSD HotStorage 2014, and OPS isolation in FAST 2015)
 	* However, CMT is shared among concurrent streams in two ways: 1) each address mapping domain
 	* shares the whole CMT space with other domains, and 2) each address mapping domain has
-	* its own share of CMT (equal partitioning of CMT space among concurrent streams).*/
+	* its own share of CMT (equal partitioning of CMT space among concurrent streams).
+	  每个流都有其自己的地址映射域。这有助于隔离垃圾回收干扰
+	*（例如，多流 SSD HotStorage 2014 和 FAST 2015 中的 OPS 隔离）
+	* 然而，CMT 在并发流之间以两种方式共享：
+		1) 每个地址映射域与其他域共享整个 CMT 空间，
+		2) 每个地址映射域有其自己的一部分 CMT（在并发流之间均等划分 CMT 空间）。
+	*/
 	class AddressMappingDomain
 	{
 	public:
@@ -82,18 +88,21 @@ namespace SSD_Components
 		~AddressMappingDomain();
 
 		/*Stores the mapping of Virtual Translation Page Number (MVPN) to Physical Translation Page Number (MPPN).
-		* It is always kept in volatile memory.*/
+		* It is always kept in volatile memory.
+		存储虚拟页号 (MVPN) 到物理页号 (MPPN) 的映射。它始终保存在易失性内存中。*/
 		GTDEntryType* GlobalTranslationDirectory;
 
 		/*The cached mapping table that is implemented based on the DFLT (Gupta et al., ASPLOS 2009) proposal.
-		* It is always stored in volatile memory.*/
+		* It is always stored in volatile memory.
+		基于DFLT（Gupta等，ASPLOS 2009）提案实现的缓存映射表。它始终存储在易失性内存中。*/
 		unsigned int CMT_entry_size;
 		unsigned int Translation_entries_per_page;
 		Cached_Mapping_Table* CMT;
 		unsigned int No_of_inserted_entries_in_preconditioning;
 
 		/*The logical to physical address mapping of all data pages that is implemented based on the DFTL (Gupta et al., ASPLOS 2009(
-		* proposal. It is always stored in non-volatile flash memory.*/
+		* proposal. It is always stored in non-volatile flash memory.
+		基于DFTL（Gupta等，ASPLOS 2009）的所有数据页面的逻辑到物理地址映射。这些映射总是存储在非易失性闪存中。*/
 		GMTEntryType* GlobalMappingTable;
 		void Update_mapping_info(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa, const PPA_type ppa, const page_status_type page_status_bitmap);
 		page_status_type Get_page_status(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa);
@@ -105,8 +114,8 @@ namespace SSD_Components
 		std::multimap<LPA_type, NVM_Transaction_Flash*> Waiting_unmapped_program_transactions;
 		std::multimap<MVPN_type, LPA_type> ArrivingMappingEntries;
 		std::set<MVPN_type> DepartingMappingEntries;
-		std::set<LPA_type> Locked_LPAs;//Used to manage race conditions, i.e. a user request accesses and LPA while GC is moving that LPA 
-		std::set<MVPN_type> Locked_MVPNs;//Used to manage race conditions
+		std::set<LPA_type> Locked_LPAs;//用于管理竞争条件，即用户请求在垃圾回收（GC）移动该逻辑页面（LPA）时访问该LPA 
+		std::set<MVPN_type> Locked_MVPNs;//用于管理竞争条件
 		std::multimap<LPA_type, NVM_Transaction_Flash*> Read_transactions_behind_LPA_barrier;
 		std::multimap<LPA_type, NVM_Transaction_Flash*> Write_transactions_behind_LPA_barrier;
 		std::set<MVPN_type> MVPN_read_transactions_waiting_behind_barrier;
@@ -148,19 +157,21 @@ namespace SSD_Components
 
 		void Allocate_address_for_preconditioning(const stream_id_type stream_id, std::map<LPA_type, page_status_type>& lpa_list, std::vector<double>& steady_state_distribution);
 		int Bring_to_CMT_for_preconditioning(stream_id_type stream_id, LPA_type lpa);
+		void Store_mapping_table_on_flash_at_start();
 		unsigned int Get_cmt_capacity();
 		unsigned int Get_current_cmt_occupancy_for_stream(stream_id_type stream_id);
+		
+		//Address translation functions
 		void Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList);
 		void Get_data_mapping_info_for_gc(const stream_id_type stream_id, const LPA_type lpa, PPA_type& ppa, page_status_type& page_state);
 		void Get_translation_mapping_info_for_gc(const stream_id_type stream_id, const MVPN_type mvpn, MPPN_type& mppa, sim_time_type& timestamp);
 		void Allocate_new_page_for_gc(NVM_Transaction_Flash_WR* transaction, bool is_translation_page);
-
-		void Store_mapping_table_on_flash_at_start();
 		LPA_type Get_logical_pages_count(stream_id_type stream_id);
 		NVM::FlashMemory::Physical_Page_Address Convert_ppa_to_address(const PPA_type ppa);
 		void Convert_ppa_to_address(const PPA_type ppn, NVM::FlashMemory::Physical_Page_Address& address);
 		PPA_type Convert_address_to_ppa(const NVM::FlashMemory::Physical_Page_Address& pageAddress);
-
+		
+		// 垃圾回收和磨损均衡执行的系统状态一致性控制函数
 		void Set_barrier_for_accessing_physical_block(const NVM::FlashMemory::Physical_Page_Address& block_address);
 		void Set_barrier_for_accessing_lpa(stream_id_type stream_id, LPA_type lpa);
 		void Set_barrier_for_accessing_mvpn(stream_id_type stream_id, MVPN_type mpvn);
@@ -171,7 +182,8 @@ namespace SSD_Components
 		static Address_Mapping_Unit_Page_Level* _my_instance;
 		unsigned int cmt_capacity;
 		AddressMappingDomain** domains;
-		unsigned int CMT_entry_size, GTD_entry_size;//In CMT MQSim stores (lpn, ppn, page status bits) but in GTD it only stores (ppn, page status bits)
+		//CMT cached mapping table;GTD Global Translation Directory 虚拟页号 (MVPN) 到物理页号 (MPPN) 的映射
+		unsigned int CMT_entry_size, GTD_entry_size;//In CMT MQSim stores (lpn, ppn, page status bits) but in GTD it only stores (ppn, page status bits) //在CMT中，MQSim存储（lpn，ppn，页面状态位），而在GTD中仅存储（ppn，页面状态位）
 		void allocate_plane_for_user_write(NVM_Transaction_Flash_WR* transaction);
 		void allocate_page_in_plane_for_user_write(NVM_Transaction_Flash_WR* transaction, bool is_for_gc);
 		void allocate_plane_for_translation_write(NVM_Transaction_Flash* transaction);

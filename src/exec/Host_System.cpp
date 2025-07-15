@@ -173,7 +173,7 @@ void Host_System::Report_results_in_XML(std::string name_prefix, Utils::XmlWrite
 
 	xmlwriter.Write_close_tag();
 }
-
+//统计数据
 std::vector<Utils::Workload_Statistics*> Host_System::get_workloads_statistics()
 {
 	std::vector<Utils::Workload_Statistics*> stats;

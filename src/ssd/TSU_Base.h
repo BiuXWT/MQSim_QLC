@@ -1,4 +1,4 @@
-#ifndef TSU_H
+﻿#ifndef TSU_H
 #define TSU_H
 
 #include <list>
@@ -19,6 +19,9 @@ enum class Flash_Scheduling_Type
 	FLIN
 };
 class FTL;
+/// <summary>
+/// Transaction Schedual Unit
+/// </summary>
 class TSU_Base : public MQSimEngine::Sim_Object
 {
 public:
@@ -43,6 +46,14 @@ public:
 		* More precisely, first the transactions are queued and then, when the Schedule function
 		* is invoked, the TSU has that opportunity to schedule them together to exploit multiplane
 		* and die-interleaved execution.
+	* 当MQSim需要发送一组事务进行执行时，以下* 三个功能应按照此顺序调用：
+		* Prepare_for_transaction_submit()
+		* Submit_transaction(transaction)
+		* ......
+		* Submit_transaction(transaction)
+		* Schedule()
+		* 上述机制有助于利用芯片级和平面级的并行性。
+		* 更准确地说，首先将事务排队，然后，当调用Schedule函数时，TSU就有机会将它们一起调度，以利用多平面和芯片交错执行。
 		*/
 	void Prepare_for_transaction_submit()
 	{
