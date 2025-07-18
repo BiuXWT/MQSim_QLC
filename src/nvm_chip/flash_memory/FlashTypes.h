@@ -21,8 +21,8 @@ typedef uint32_t flash_die_ID_type;
 typedef uint32_t flash_plane_ID_type;
 typedef uint32_t flash_block_ID_type;
 typedef uint32_t flash_page_ID_type;
-typedef uint64_t LPA_type;
-typedef uint64_t PPA_type;
+typedef uint64_t LPA_type; // Logical page address
+typedef uint64_t PPA_type; // Physical page address
 typedef uint64_t command_code_type;
 
 enum class Flash_Technology_Type { SLC = 1, MLC = 2, TLC = 3, QLC = 4 };

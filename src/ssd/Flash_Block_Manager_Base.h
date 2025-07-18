@@ -42,6 +42,7 @@ namespace SSD_Components
 		bool Hot_block = false;//Used for hot/cold separation mentioned in the "On the necessity of hot and cold data identification to reduce the write amplification in flash-based SSDs", Perf. Eval., 2014.
 		int Ongoing_user_read_count;
 		int Ongoing_user_program_count;
+		bool bad_block;//标记是否为坏块
 		void Erase();
 	};
 
@@ -53,6 +54,7 @@ namespace SSD_Components
 		unsigned int Valid_pages_count;
 		unsigned int Invalid_pages_count;
 		Block_Pool_Slot_Type* Blocks;
+		Block_Pool_Slot_Type *Bad_Blocks;
 		std::multimap<unsigned int, Block_Pool_Slot_Type*> Free_block_pool;
 		Block_Pool_Slot_Type** Data_wf, ** GC_wf; //The write frontier blocks for data and GC pages. MQSim adopts Double Write Frontier approach for user and GC writes which is shown very advantages in: B. Van Houdt, "On the necessity of hot and cold data identification to reduce the write amplification in flash - based SSDs", Perf. Eval., 2014
 		Block_Pool_Slot_Type** Translation_wf; //The write frontier blocks for translation GC pages

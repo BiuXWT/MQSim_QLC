@@ -1,4 +1,4 @@
-#ifndef NVM_TRANSACTION_FLASH_H
+﻿#ifndef NVM_TRANSACTION_FLASH_H
 #define NVM_TRANSACTION_FLASH_H
 
 #include <string>
@@ -31,7 +31,7 @@ namespace SSD_Components
 		PPA_type PPA;
 
 		bool SuspendRequired;
-		bool Physical_address_determined;
+		bool Physical_address_determined;//物理地址被正确翻译并赋值
 		sim_time_type Estimated_alone_waiting_time;//Used in scheduling methods, such as FLIN, where fairness and QoS is considered in scheduling
 		bool FLIN_Barrier;//Especially used in queue reordering in FLIN scheduler
 	private:

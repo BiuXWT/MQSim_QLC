@@ -1,4 +1,4 @@
-#ifndef DATA_CACHE_MANAGER_FLASH_ADVANCED_H
+﻿#ifndef DATA_CACHE_MANAGER_FLASH_ADVANCED_H
 #define DATA_CACHE_MANAGER_FLASH_ADVANCED_H
 
 #include <list>
@@ -15,16 +15,21 @@ namespace SSD_Components
 	/*
 	Assumed hardware structure:
 			waiting_user_requests_queue_for_dram_free_slot (a user write request is enqueued into this queue if DRAM is full. For a user read request, there is no need for DRAM free slot and thus no queue.)
+			等待用户请求队列以获得 DRAM 空闲槽（如果 DRAM 已满，用户写入请求将排队到此队列中。对于用户读取请求，不需要 DRAM 空闲槽，因此没有队列。）
 					 |
 					 |
 					\|/
 			dram_execution_queue (the transfer request goes here if DRAM can service it but the memory channel is busy)
+			DRAM 执行队列（如果 DRAM 可以处理此请求，但内存通道忙，则传输请求到此）
 					 |
 					 |
 					\|/
 			 --------------------------------------------------|------------------------
 			|     DRAM Data_Cache_Flash Main Data Space                   |   Back Pressure Space  | ---------->To the flash backend
+			|     DRAM 数据缓存闪存主数据空间                              | 背压空间            | ----------> 到闪存后端
 			 --------------------------------------------------|------------------------
+
+			 what is "back pressure":下游处理速度慢，造成上游阻塞的现象
 	*/
 	class Data_Cache_Manager_Flash_Advanced : public Data_Cache_Manager_Base
 	{
@@ -46,15 +51,16 @@ namespace SSD_Components
 		bool memory_channel_is_busy;
 		
 		void process_new_user_request(User_Request* user_request);
-		void write_to_destage_buffer(User_Request* user_request);//Used in the WRITE_CACHE and WRITE_READ_CACHE modes in which the DRAM space is used as a destage buffer
-		std::queue<Memory_Transfer_Info*>* dram_execution_queue;//The list of DRAM transfers that are waiting to be executed
-		std::list<User_Request*>* waiting_user_requests_queue_for_dram_free_slot;//The list of user requests that are waiting for free space in DRAM
+		//destage buffer,暂存buffer，当达到某种条件时，刷入nand
+		void write_to_destage_buffer(User_Request* user_request);//Used in the WRITE_CACHE and WRITE_READ_CACHE modes in which the DRAM space is used as a destage buffer//在WRITE_CACHE和WRITE_READ_CACHE模式中使用，其中DRAM空间用作暂存缓冲区
+		std::queue<Memory_Transfer_Info*>* dram_execution_queue;//The list of DRAM transfers that are waiting to be executed//等待执行的DRAM传输列表
+		std::list<User_Request*>* waiting_user_requests_queue_for_dram_free_slot;//The list of user requests that are waiting for free space in DRAM//等待Dram释放空间的用户请求列表
 		bool shared_dram_request_queue;
 		int dram_execution_list_turn;
 		unsigned int back_pressure_buffer_max_depth;
 		unsigned int *back_pressure_buffer_depth;
-		std::set<LPA_type>* bloom_filter;
-		sim_time_type bloom_filter_reset_step = 1000000000;
+		std::set<LPA_type>* bloom_filter; //记录已处理过的冷数据，即保存下来的是热数据（针对缓存）
+		sim_time_type bloom_filter_reset_step = 1000000000; //每这么长时间重置一下热数据
 		sim_time_type next_bloom_filter_reset_milestone = 0;
 
 		static void handle_transaction_serviced_signal_from_PHY(NVM_Transaction_Flash* transaction);

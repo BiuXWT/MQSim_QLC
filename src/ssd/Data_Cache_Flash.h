@@ -1,4 +1,4 @@
-#ifndef DATA_CACHE_FLASH_H
+﻿#ifndef DATA_CACHE_FLASH_H
 #define DATA_CACHE_FLASH_H
 
 #include <list>
@@ -11,10 +11,15 @@
 
 namespace SSD_Components
 {
-	enum class Cache_Slot_Status { EMPTY, CLEAN, DIRTY_NO_FLASH_WRITEBACK, DIRTY_FLASH_WRITEBACK };
+	enum class Cache_Slot_Status {
+		EMPTY,                    // 空的，没有数据
+		CLEAN,                    // 干净的，数据和NAND一致
+		DIRTY_NO_FLASH_WRITEBACK, // 脏的，但还不需要刷回NAND
+		DIRTY_FLASH_WRITEBACK     // 脏的，需要刷回NAND
+	};
 	struct Data_Cache_Slot_Type
 	{
-		unsigned long long State_bitmap_of_existing_sectors;
+		unsigned long long State_bitmap_of_existing_sectors;//标识 page 中有效扇区
 		LPA_type LPA;
 		data_cache_content_type Content;
 		data_timestamp_type Timestamp;

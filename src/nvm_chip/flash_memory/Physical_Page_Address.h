@@ -19,6 +19,7 @@ namespace NVM
 			flash_plane_ID_type PlaneID;
 			flash_block_ID_type BlockID;
 			flash_page_ID_type PageID;
+			friend std::ostream& operator<<(std::ostream& os,Physical_Page_Address& addr);
 
 			Physical_Page_Address(const flash_channel_ID_type channel_id = 0, const flash_chip_ID_type chip_id = 0, const flash_die_ID_type die_id = 0,
 				const flash_plane_ID_type plane_id = 0, const flash_block_ID_type block_id = 0, const flash_page_ID_type page_id = 0)
