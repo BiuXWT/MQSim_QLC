@@ -1,4 +1,4 @@
-#include "Flash_Block_Manager.h"
+﻿#include "Flash_Block_Manager.h"
 
 
 namespace SSD_Components
@@ -28,7 +28,7 @@ namespace SSD_Components
 						plane_manager[channelID][chipID][dieID][planeID].Ongoing_erase_operations.clear();
 						plane_manager[channelID][chipID][dieID][planeID].Blocks = new Block_Pool_Slot_Type[block_no_per_plane];
 						
-						//Initialize block pool for plane
+						//Initialize block pool for plan
 						for (unsigned int blockID = 0; blockID < block_no_per_plane; blockID++) {
 							plane_manager[channelID][chipID][dieID][planeID].Blocks[blockID].BlockID = blockID;
 							plane_manager[channelID][chipID][dieID][planeID].Blocks[blockID].Current_page_write_index = 0;
@@ -105,7 +105,7 @@ namespace SSD_Components
 	Block_Pool_Slot_Type* PlaneBookKeepingType::Get_a_free_block(stream_id_type stream_id, bool for_mapping_data)
 	{
 		Block_Pool_Slot_Type* new_block = NULL;
-		new_block = (*Free_block_pool.begin()).second;//Assign a new write frontier block
+		new_block = (*Free_block_pool.begin()).second;//分配open block
 		if (Free_block_pool.size() == 0) {
 			PRINT_ERROR("Requesting a free block from an empty pool!")
 		}
@@ -120,9 +120,11 @@ namespace SSD_Components
 	void PlaneBookKeepingType::Check_bookkeeping_correctness(const NVM::FlashMemory::Physical_Page_Address& plane_address)
 	{
 		if (Total_pages_count != Free_pages_count + Valid_pages_count + Invalid_pages_count) {
+			//页面数量不一致
 			PRINT_ERROR("Inconsistent status in the plane bookkeeping record!")
 		}
 		if (Free_pages_count == 0) {
+			//空闲页面用完
 			PRINT_ERROR("Plane " << "@" << plane_address.ChannelID << "@" << plane_address.ChipID << "@" << plane_address.DieID << "@" << plane_address.PlaneID << " pool size: " << Get_free_block_pool_size() << " ran out of free pages! Bad resource management! It is not safe to continue simulation!");
 		}
 	}

@@ -64,22 +64,30 @@ namespace SSD_Components
 		Cached_Mapping_Table(unsigned int capacity);
 		~Cached_Mapping_Table();
 		bool Exists(const stream_id_type streamID, const LPA_type lpa);//检查某个 LPA 是否存在于缓存中
-		PPA_type Retrieve_ppa(const stream_id_type streamID, const LPA_type lpa);//获取 LPA 对应的 PPA
+		// 获取 LPA 对应的 PPA;Retrieve:检索
+		PPA_type Retrieve_ppa(const stream_id_type streamID, const LPA_type lpa);
+		//更新缓存中的映射信息
 		void Update_mapping_info(const stream_id_type streamID, const LPA_type lpa, const PPA_type ppa, const page_status_type pageWriteState);
-		void Insert_new_mapping_info(const stream_id_type streamID, const LPA_type lpa, const PPA_type ppa, const unsigned long long pageWriteState);//插入新的映射信息
+		//插入新的映射信息
+		void Insert_new_mapping_info(const stream_id_type streamID, const LPA_type lpa, const PPA_type ppa, const unsigned long long pageWriteState);
 		page_status_type Get_bitmap_vector_of_written_sectors(const stream_id_type streamID, const LPA_type lpa);
 
 		bool Is_slot_reserved_for_lpn_and_waiting(const stream_id_type streamID, const LPA_type lpa);
 		bool Check_free_slot_availability();
 		void Reserve_slot_for_lpn(const stream_id_type streamID, const LPA_type lpa);
-		CMTSlotType Evict_one_slot(LPA_type& lpa);//驱逐一个缓存条目（用于腾出空间）
-		
-		bool Is_dirty(const stream_id_type streamID, const LPA_type lpa);//判断缓存条目的“脏”状态。
-		void Make_clean(const stream_id_type streamID, const LPA_type lpa);//清除缓存条目的“脏”状态。
+		//驱逐一个缓存条目（用于腾出空间）
+		CMTSlotType Evict_one_slot(LPA_type& lpa);
+		//判断缓存条目的“脏”状态。
+		bool Is_dirty(const stream_id_type streamID, const LPA_type lpa);
+		//清除缓存条目的“脏”状态。
+		void Make_clean(const stream_id_type streamID, const LPA_type lpa);
 	private:
-		std::unordered_map<LPA_type, CMTSlotType*> addressMap; // 地址映射：存储逻辑页号到物理页号的映射---哈希表，用于快速查找 LPA 到 CMTSlot 的映射
-		std::list<std::pair<LPA_type, CMTSlotType*>> lruList;  //LRU 链表，用于管理缓存条目的替换策略。
-		unsigned int capacity;//CMT 的最大容量
+		// 地址映射：存储逻辑页号到物理页号的映射---哈希表，用于快速查找 LPA 到 CMTSlot 的映射
+		std::unordered_map<LPA_type, CMTSlotType*> addressMap; 
+		//LRU 链表，用于管理缓存条目的替换策略。
+		std::list<std::pair<LPA_type, CMTSlotType*>> lruList;  
+		//CMT 的容量
+		unsigned int capacity;
 	};
 
 	/* Each stream has its own address mapping domain. It helps isolation of GC interference
@@ -116,13 +124,15 @@ namespace SSD_Components
 		基于DFLT（Gupta等，ASPLOS 2009）提案实现的缓存映射表。它始终存储在易失性内存中。*/
 		unsigned int CMT_entry_size;
 		unsigned int Translation_entries_per_page;
-		Cached_Mapping_Table* CMT;//缓存的LPA->PPA映射表；存储在dram中
+		//缓存的LPA->PPA映射表；存储在dram中
+		Cached_Mapping_Table* CMT;
 		unsigned int No_of_inserted_entries_in_preconditioning;
 
 		/*The logical to physical address mapping of all data pages that is implemented based on the DFTL (Gupta et al., ASPLOS 2009(
 		* proposal. It is always stored in non-volatile flash memory.
 		基于DFTL（Gupta等，ASPLOS 2009）的所有数据页面的逻辑到物理地址映射。这些映射总是存储在非易失性闪存中。*/
-		GMTEntryType *GlobalMappingTable; // 全局的LPA->PPA映射表（GMT）;存储在flash中
+		// 全局(全量)的LPA->PPA映射表（GMT）;存储在flash中
+		GMTEntryType *GlobalMappingTable;
 		void Update_mapping_info(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa, const PPA_type ppa, const page_status_type page_status_bitmap);
 		page_status_type Get_page_status(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa);
 		PPA_type Get_ppa(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa);
@@ -175,13 +185,14 @@ namespace SSD_Components
 		void Validate_simulation_config();
 		void Execute_simulator_event(MQSimEngine::Sim_Event*);
 
+		//用于预处理的函数
 		void Allocate_address_for_preconditioning(const stream_id_type stream_id, std::map<LPA_type, page_status_type>& lpa_list, std::vector<double>& steady_state_distribution);
 		int Bring_to_CMT_for_preconditioning(stream_id_type stream_id, LPA_type lpa);
 		void Store_mapping_table_on_flash_at_start();
 		unsigned int Get_cmt_capacity();
 		unsigned int Get_current_cmt_occupancy_for_stream(stream_id_type stream_id);
 		
-		//Address translation functions
+		//地址翻译函数
 		void Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList);
 		void Get_data_mapping_info_for_gc(const stream_id_type stream_id, const LPA_type lpa, PPA_type& ppa, page_status_type& page_state);
 		void Get_translation_mapping_info_for_gc(const stream_id_type stream_id, const MVPN_type mvpn, MPPN_type& mppa, sim_time_type& timestamp);
@@ -200,7 +211,7 @@ namespace SSD_Components
 		void Start_servicing_writes_for_overfull_plane(const NVM::FlashMemory::Physical_Page_Address plane_address);
 	private:
 		static Address_Mapping_Unit_Page_Level* _my_instance;
-		unsigned int cmt_capacity;
+		unsigned int cmt_capacity;//cmt条目数
 		AddressMappingDomain** domains;//地址映射域，按stream区分
 		//CMT cached mapping table;GTD Global Translation Directory 虚拟页号 (MVPN) 到物理页号 (MPPN) 的映射
 		unsigned int CMT_entry_size, GTD_entry_size;//In CMT MQSim stores (lpn, ppn, page status bits) but in GTD it only stores (ppn, page status bits) //在CMT中，MQSim存储（lpn，ppn，页面状态位），而在GTD中仅存储（ppn，页面状态位）
@@ -212,6 +223,7 @@ namespace SSD_Components
 		bool request_mapping_entry(const stream_id_type streamID, const LPA_type lpn);
 		static void handle_transaction_serviced_signal_from_PHY(NVM_Transaction_Flash* transaction);
 		bool translate_lpa_to_ppa(stream_id_type streamID, NVM_Transaction_Flash* transaction);
+		//当某个 plane 没有足够的空闲页（free pages）来满足当前写请求时，该写请求会被暂时挂起并插入到 Write_transactions_for_overfull_planes 对应的位置中，等待后续 GC（垃圾回收）释放空间后，再重新尝试写入。
 		std::set<NVM_Transaction_Flash_WR*>**** Write_transactions_for_overfull_planes;
 
 		void generate_flash_read_request_for_mapping_data(const stream_id_type streamID, const LPA_type lpn);
@@ -222,10 +234,15 @@ namespace SSD_Components
 		LPA_type get_start_LPN_in_MVP(const MVPN_type);
 		LPA_type get_end_LPN_in_MVP(const MVPN_type);
 
-		bool query_cmt(NVM_Transaction_Flash* transaction);//查询cached mapping table
+		//查询cached mapping table
+		bool query_cmt(NVM_Transaction_Flash* transaction);
+		//在读操作过程中动态创建缓存映射表（CMT）条目
 		PPA_type online_create_entry_for_reads(LPA_type lpa, const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& read_address, uint64_t read_sectors_bitmap);
+		//把事务加到Write_transactions_for_overfull_planes，等待gc
 		void mange_unsuccessful_translation(NVM_Transaction_Flash* transaction);
+		//用户事务遇到屏障
 		void manage_user_transaction_facing_barrier(NVM_Transaction_Flash* transaction);
+		//映射事务遇到屏障
 		void manage_mapping_transaction_facing_barrier(stream_id_type stream_id, MVPN_type mvpn, bool read);
 		bool is_lpa_locked_for_gc(stream_id_type stream_id, LPA_type lpa);
 		bool is_mvpn_locked_for_gc(stream_id_type stream_id, MVPN_type mvpn);

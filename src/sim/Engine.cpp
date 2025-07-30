@@ -85,6 +85,7 @@ namespace MQSimEngine
 			if (_EventList->Count == 0 || stop) {
 				break;
 			}
+			DEBUG_BIU("start=============================================================");
 
 			EventTreeNode* minNode = _EventList->Get_min_node();
 			ev = minNode->FirstSimEvent;
@@ -92,22 +93,20 @@ namespace MQSimEngine
 			_sim_time = ev->Fire_time;
 
 			while (ev != NULL) {
-				if (ev->Target_sim_object->ID().find("PHY") != std::string::npos) {
-					DEBUG_BIU(cnt <<":" << ev->Target_sim_object->ID())
-						cnt++;
-					if (ev->Ignore) DEBUG_BIU("ignore")
-						if (cnt == 500) {
-							Stop_simulation();
-						}
-				}
+				DEBUG_BIU("start+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 				if(!ev->Ignore) {
+					DEBUG_BIU("Event: " << "firetime:" << ev->Fire_time << " " << ev->Target_sim_object->ID());
 					ev->Target_sim_object->Execute_simulator_event(ev);
+				}else{
+					DEBUG_BIU("IgnoreEvent: " << "firetime:" << ev->Fire_time << " " << ev->Target_sim_object->ID());
 				}
 				Sim_Event* consumed_event = ev;
+				DEBUG_BIU("end+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 				ev = ev->Next_event;
 				delete consumed_event;
 			}
 			_EventList->Remove(minNode);
+			DEBUG_BIU("end=============================================================");
 		}
 	}
 

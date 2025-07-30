@@ -87,29 +87,29 @@ namespace SSD_Components
 	protected:
 		FTL* ftl;
 		NVM_PHY_ONFI* flash_controller;
-		Flash_Block_Manager_Base* block_manager;
-		CMT_Sharing_Mode sharing_mode;
+		Flash_Block_Manager_Base* block_manager;//块管理器
+		CMT_Sharing_Mode sharing_mode;//CMT的共享模式
 		bool ideal_mapping_table;//如果映射是理想的，那么所有的映射条目都可以在DRAM中找到，不需要从闪存中读取映射条目。
-		unsigned int no_of_input_streams;
-		LHA_type max_logical_sector_address;
-		unsigned int total_logical_pages_no = 0;
+		unsigned int no_of_input_streams;//stream 数量
+		LHA_type max_logical_sector_address;//最大逻辑扇区地址
 
-		unsigned int channel_count;
-		unsigned int chip_no_per_channel;
-		unsigned int die_no_per_chip;
-		unsigned int plane_no_per_die;
-		unsigned int block_no_per_plane;
-		unsigned int pages_no_per_block;
-		unsigned int sector_no_per_page;
-		unsigned int page_size_in_byte;
-		unsigned int total_physical_pages_no = 0;
-		unsigned int page_no_per_channel = 0;
-		unsigned int page_no_per_chip = 0;
-		unsigned int page_no_per_die = 0;
-		unsigned int page_no_per_plane = 0;
-		double overprovisioning_ratio;
-		bool fold_large_addresses;
-		bool mapping_table_stored_on_flash;
+		unsigned int channel_count;//channel 数量
+		unsigned int chip_no_per_channel;//每个channel的chip数量
+		unsigned int die_no_per_chip;//每个chip的die数量
+		unsigned int plane_no_per_die;//每个die的plane数量
+		unsigned int block_no_per_plane;//每个plane的block数量
+		unsigned int pages_no_per_block;//每个block的page数量
+		unsigned int sector_no_per_page;//每个page的sector数量
+		unsigned int page_size_in_byte;//page大小
+		unsigned int total_physical_pages_no = 0;//总的物理页数
+		unsigned int total_logical_pages_no = 0;//总的逻辑页数，排除冗余比例
+		unsigned int page_no_per_channel = 0;//channel总page数
+		unsigned int page_no_per_chip = 0;//chip总page数
+		unsigned int page_no_per_die = 0;//die总page数
+		unsigned int page_no_per_plane = 0;//plane总page数
+		double overprovisioning_ratio;//冗余比
+		bool fold_large_addresses;//是否折叠地址
+		bool mapping_table_stored_on_flash;//映射表是否存储在flash中
 
 		virtual bool query_cmt(NVM_Transaction_Flash* transaction) = 0;
 		virtual PPA_type online_create_entry_for_reads(LPA_type lpa, const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& read_address, uint64_t read_sectors_bitmap) = 0;

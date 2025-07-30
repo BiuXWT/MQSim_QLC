@@ -27,12 +27,12 @@ namespace SSD_Components
 		NVM::FlashMemory::Physical_Page_Address Address;
 		unsigned int Data_and_metadata_size_in_byte; //number of bytes contained in the request: bytes in the real page + bytes of metadata
 
-		LPA_type LPA;
-		PPA_type PPA;
+		LPA_type LPA;//logical page address
+		PPA_type PPA;//physical page address
 
-		bool SuspendRequired;
+		bool SuspendRequired;//是否需要暂停
 		bool Physical_address_determined;//物理地址被正确翻译并赋值
-		sim_time_type Estimated_alone_waiting_time;//Used in scheduling methods, such as FLIN, where fairness and QoS is considered in scheduling
+		sim_time_type Estimated_alone_waiting_time;//用于调度方法，如 FLIN，在调度中考虑公平性和 QoS
 		bool FLIN_Barrier;//Especially used in queue reordering in FLIN scheduler
 	private:
 

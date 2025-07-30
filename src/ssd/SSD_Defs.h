@@ -1,4 +1,4 @@
-#ifndef SSD_DEFS_H
+﻿#ifndef SSD_DEFS_H
 #define SSD_DEFS_H
 
 #include<cstdint>
@@ -9,12 +9,13 @@
 //enum class Memory_Type {FLASH};
 
 typedef uint32_t host_pointer_type;
+//逻辑主机地址，主机端上的地址单位。截至2018年，LHA主要是一个扇区（即512B），但在未来的NVM中，它可以小到一个缓存行（即64B）。
 typedef uint64_t LHA_type;//Logical Host Address, the addresses unit on the host-side. As of 2018, LHA is mainly a sector (i.e., 512B) but it could be as small as a cache-line (i.e., 64B) in future NVMs.
-typedef uint64_t PDA_type;//Physical device address, could be a 1) sector, 2) subpage, or a 3) cacheline
+typedef uint64_t PDA_type;//Physical device address, could be a 1) sector, 2) subpage, or a 3) cacheline//物理设备地址，可以是 1） 扇区、2） 子页面或 3） 缓存行
 typedef std::string io_request_id_type;
 typedef uint64_t data_cache_content_type;
 #define SECTOR_SIZE_IN_BYTE 512
-#define MAX_SUPPORT_STREAMS 256 //this value shouldn't be increased as some other parameters are set based on the maximum number of 256
+#define MAX_SUPPORT_STREAMS 256 //this value shouldn't be increased as some other parameters are set based on the maximum number of 256 //不应增加此值，因为其他一些参数是根据最大数量 256 设置的
 
 /* Since MQSim supports shared resources, such as DataCache and CMT,
 * it needs to make the keys (i.e., LPNs) to access these resources

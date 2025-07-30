@@ -1,4 +1,4 @@
-#ifndef TSU_PRIORITY_OUTOFORDER_H_
+﻿#ifndef TSU_PRIORITY_OUTOFORDER_H_
 #define TSU_PRIORITY_OUTOFORDER_H_
 
 #include <list>
@@ -18,6 +18,10 @@ class FTL;
 	*    solid state disks, HPCA, 2014".
 	* 2. Program and erase suspension, similar to the proposal described in "G. Wu and X. He,
 	*    Reducing SSD read latency via NAND flash program and erase suspension, FAST 2012".
+    * 
+    * 这个类实现了一个事务调度单元，支持：
+    * 1. 无序执行对列中的闪存事务，类似论文：。。。。
+    * 2. 编程和擦除的挂起，类似论文：。。。。
 	*/
 class TSU_Priority_OutOfOrder : public TSU_Base
 {

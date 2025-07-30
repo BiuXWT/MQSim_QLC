@@ -1,4 +1,4 @@
-#ifndef FLASH_BLOCK_MANAGER_H
+﻿#ifndef FLASH_BLOCK_MANAGER_H
 #define FLASH_BLOCK_MANAGER_H
 
 #include <list>
@@ -15,16 +15,23 @@ namespace SSD_Components
 			unsigned int channel_count, unsigned int chip_no_per_channel, unsigned int die_no_per_chip, unsigned int plane_no_per_die,
 			unsigned int block_no_per_plane, unsigned int page_no_per_block);
 		~Flash_Block_Manager();
+		//为用户写操作分配一个块/页
 		void Allocate_block_and_page_in_plane_for_user_write(const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& address);
+		//为用GC操作分配一个块/页
 		void Allocate_block_and_page_in_plane_for_gc_write(const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& address);
 		void Allocate_Pages_in_block_and_invalidate_remaining_for_preconditioning(const stream_id_type stream_id, const NVM::FlashMemory::Physical_Page_Address& plane_address, std::vector<NVM::FlashMemory::Physical_Page_Address>& page_addresses);
+		//为地址翻译写入操作分配一个块/页
 		void Allocate_block_and_page_in_plane_for_translation_write(const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& address, bool is_for_gc);
+		//将指定块中的某一页标记为无效
 		void Invalidate_page_in_block(const stream_id_type streamID, const NVM::FlashMemory::Physical_Page_Address& address);
 		void Invalidate_page_in_block_for_preconditioning(const stream_id_type streamID, const NVM::FlashMemory::Physical_Page_Address& address);
+		//将擦除后的块加入空闲块池
 		void Add_erased_block_to_pool(const NVM::FlashMemory::Physical_Page_Address& address);
+		//获取指定平面中空闲块池的大小
 		unsigned int Get_pool_size(const NVM::FlashMemory::Physical_Page_Address& plane_address);
 	private:
 	};
 }
+
 
 #endif // !FLASH_BLOCK_MANAGER_H
