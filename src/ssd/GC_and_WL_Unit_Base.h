@@ -1,4 +1,4 @@
-#ifndef GC_AND_WL_UNIT_BASE_H
+﻿#ifndef GC_AND_WL_UNIT_BASE_H
 #define GC_AND_WL_UNIT_BASE_H
 
 #include "../sim/Sim_Object.h"
@@ -78,13 +78,16 @@ namespace SSD_Components
 		unsigned int static_wearleveling_threshold;
 
 		//Used to implement: "Preemptible I/O Scheduling of Garbage Collection for Solid State Drives", TCAD 2013.
+        //用于实现："固态驱动器的可抢占I/O调度垃圾回收", TCAD 2013.
 		bool preemptible_gc_enabled;
 		double gc_hard_threshold;
 		unsigned int block_pool_gc_hard_threshold;
+		//这个值有两个重要的用途：1）每个plane最大并发垃圾回收操作的数量；2）在闪存块不足时决定紧急垃圾回收执行的值。如果block数量低于这个值，所有传入的用户写入应该被阻止。
 		unsigned int max_ongoing_gc_reqs_per_plane;//This value has two important usages: 1) maximum number of concurrent gc operations per plane, and 2) the value that determines urgent GC execution when there is a shortage of flash blocks. If the block bool size drops below this value, all incomming user writes should be blocked
 
 		//Following variabels are used based on the type of GC block selection policy
-		unsigned int rga_set_size;//The number of random flash blocks that are radnomly selected 
+        //以下变量根据GC块选择策略的类型使用。
+		unsigned int rga_set_size;//The number of random flash blocks that are radnomly selected 随机选择的随机闪存块数量
 		Utils::RandomGenerator random_generator;
 		std::queue<Block_Pool_Slot_Type*> block_usage_fifo;
 		unsigned int random_pp_threshold;

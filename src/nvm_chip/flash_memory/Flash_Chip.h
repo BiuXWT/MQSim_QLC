@@ -114,13 +114,16 @@ namespace NVM
 						throw std::invalid_argument("Unsupported command for flash chip.");
 				}
 			}
-
+			//挂起Die正在执行的命令
 			void Suspend(flash_die_ID_type dieID);
-			void Resume(flash_die_ID_type dieID);
+			//恢复执行挂起的Die中的命令
+			void Resume(flash_die_ID_type dieID); 
 			sim_time_type GetSuspendProgramTime();
 			sim_time_type GetSuspendEraseTime();
 			void Report_results_in_XML(std::string name_prefix, Utils::XmlWriter& xmlwriter);
-			LPA_type Get_metadata(flash_die_ID_type die_id, flash_plane_ID_type plane_id, flash_block_ID_type block_id, flash_page_ID_type page_id);//A simplification to decrease the complexity of GC execution! The GC unit may need to know the metadata of a page to decide if a page is valid or invalid. 
+			//A simplification to decrease the complexity of GC execution! The GC unit may need to know the metadata of a page to decide if a page is valid or invalid. 
+			//简化GC执行的复杂度！GC单元可能需要知道页面的元数据，以确定页面是否有效。
+			LPA_type Get_metadata(flash_die_ID_type die_id, flash_plane_ID_type plane_id, flash_block_ID_type block_id, flash_page_ID_type page_id);
 		private:
 			Flash_Technology_Type flash_technology;
 			Internal_Status status;

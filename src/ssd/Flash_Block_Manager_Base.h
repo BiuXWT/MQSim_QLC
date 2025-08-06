@@ -52,13 +52,13 @@ namespace SSD_Components
 		bool Holds_mapping_data = false;
 		bool Hot_block = false;//用于在 "关于热数据和冷数据识别的重要性以减少基于闪存的SSD中的写入放大" 中提到的热/冷分离，性能评估，2014年。
 	//并发控制
-		bool Has_ongoing_gc_wl = false;
-		int Ongoing_user_read_count;
-		int Ongoing_user_program_count;
+		bool Has_ongoing_gc_wl = false;//块是否正在被垃圾回收
+		int Ongoing_user_read_count;//当前正在进行的用户读操作数
+		int Ongoing_user_program_count;//当前正在进行的用户写操作数
 		void Erase();
 	};
 
-	//管理SSD中一个Plane的Block使用情况和垃圾回收相关信息
+	//管理SSD中一个Plane的Block使用情况和垃圾回收相关信息 :book keeping(记账，簿记，管账)
 	class PlaneBookKeepingType
 	{
 	public:
@@ -95,31 +95,44 @@ namespace SSD_Components
 			unsigned int channel_count, unsigned int chip_no_per_channel, unsigned int die_no_per_chip, unsigned int plane_no_per_die,
 			unsigned int block_no_per_plane, unsigned int page_no_per_block);
 		virtual ~Flash_Block_Manager_Base();
+		//为用户写操作分配一个块/页
 		virtual void Allocate_block_and_page_in_plane_for_user_write(const stream_id_type streamID, NVM::FlashMemory::Physical_Page_Address& address) = 0;
+		//为用GC操作分配一个块/页
 		virtual void Allocate_block_and_page_in_plane_for_gc_write(const stream_id_type streamID, NVM::FlashMemory::Physical_Page_Address& address) = 0;
+		//为地址翻译写入操作分配一个块/页
 		virtual void Allocate_block_and_page_in_plane_for_translation_write(const stream_id_type streamID, NVM::FlashMemory::Physical_Page_Address& address, bool is_for_gc) = 0;
 		virtual void Allocate_Pages_in_block_and_invalidate_remaining_for_preconditioning(const stream_id_type stream_id, const NVM::FlashMemory::Physical_Page_Address& plane_address, std::vector<NVM::FlashMemory::Physical_Page_Address>& page_addresses) = 0;
+		//将指定块中的某一页标记为无效
 		virtual void Invalidate_page_in_block(const stream_id_type streamID, const NVM::FlashMemory::Physical_Page_Address& address) = 0;
 		virtual void Invalidate_page_in_block_for_preconditioning(const stream_id_type streamID, const NVM::FlashMemory::Physical_Page_Address& address) = 0;
+		//将擦除后的块加入空闲块池
 		virtual void Add_erased_block_to_pool(const NVM::FlashMemory::Physical_Page_Address& address) = 0;
+		//获取指定plane中空闲块池的大小
 		virtual unsigned int Get_pool_size(const NVM::FlashMemory::Physical_Page_Address& plane_address) = 0;
 
 
 		flash_block_ID_type Get_coldest_block_id(const NVM::FlashMemory::Physical_Page_Address& plane_address);
-		unsigned int Get_min_max_erase_difference(const NVM::FlashMemory::Physical_Page_Address& plane_address);
+		unsigned int Get_min_max_erase_difference(const NVM::FlashMemory::Physical_Page_Address& plane_address);//最热和最冷block的 P/E cycle 之差
 		void Set_GC_and_WL_Unit(GC_and_WL_Unit_Base* );
-		PlaneBookKeepingType* Get_plane_bookkeeping_entry(const NVM::FlashMemory::Physical_Page_Address& plane_address);
+		PlaneBookKeepingType* Get_plane_bookkeeping_entry(const NVM::FlashMemory::Physical_Page_Address& plane_address);//从plane_manager中获取当前plane的PBK
 		bool Block_has_ongoing_gc_wl(const NVM::FlashMemory::Physical_Page_Address& block_address);//检查当前block是否正在执行GC_WL
 		bool Can_execute_gc_wl(const NVM::FlashMemory::Physical_Page_Address& block_address);//检查 gc 请求是否可以在 block_address 上执行（不应有任何针对 block_address 的持续用户读取/程序请求）
-		void GC_WL_started(const NVM::FlashMemory::Physical_Page_Address& block_address);//标记当前块在执行GC_WL
-		void GC_WL_finished(const NVM::FlashMemory::Physical_Page_Address& block_address);//标记当前块已完成GC_WL
-		void Read_transaction_issued(const NVM::FlashMemory::Physical_Page_Address& page_address);//标记当前块读事务完成，块读取数+1
-		void Read_transaction_serviced(const NVM::FlashMemory::Physical_Page_Address& page_address);//Updates the block bookkeeping record
-		void Program_transaction_serviced(const NVM::FlashMemory::Physical_Page_Address& page_address);//Updates the block bookkeeping record
-		bool Is_having_ongoing_program(const NVM::FlashMemory::Physical_Page_Address& block_address);//Cheks if block has any ongoing program request
-		bool Is_page_valid(Block_Pool_Slot_Type* block, flash_page_ID_type page_id);//Make the page invalid in the block bookkeeping record
+		////标记当前块在执行GC_WL Has_ongoing_gc_wl true
+		void GC_WL_started(const NVM::FlashMemory::Physical_Page_Address& block_address);
+		//标记当前块已完成GC_WL:Has_ongoing_gc_wl false
+		void GC_WL_finished(const NVM::FlashMemory::Physical_Page_Address& block_address);
+		//标记当前块读事务正在进行：Ongoing_user_read_count++
+		void Read_transaction_issued(const NVM::FlashMemory::Physical_Page_Address& page_address);
+		//标记当前块读事务已完成：Ongoing_user_read_count--
+		void Read_transaction_serviced(const NVM::FlashMemory::Physical_Page_Address& page_address);
+		//标记当前块读事务已完成：Ongoing_user_program_count--
+		void Program_transaction_serviced(const NVM::FlashMemory::Physical_Page_Address& page_address);
+		//检查是否有正在进行的写入操作：Ongoing_user_program_count > 0
+		bool Is_having_ongoing_program(const NVM::FlashMemory::Physical_Page_Address& block_address);
+		bool Is_page_valid(Block_Pool_Slot_Type* block, flash_page_ID_type page_id);//检查page状态
 	protected:
-		PlaneBookKeepingType ****plane_manager;//所有plane中block的使用情况
+		//所有plane中block的使用情况 [channel] [chip] [die] [plane]：4维数组
+		PlaneBookKeepingType ****plane_manager;
 		GC_and_WL_Unit_Base *gc_and_wl_unit;
 		unsigned int max_allowed_block_erase_count;//PE cycle
 		unsigned int total_concurrent_streams_no;

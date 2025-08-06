@@ -16,6 +16,7 @@
 #define CMD_READ_PAGE_COPYBACK_MULTIPLANE 0x00321 //since the codes of multiplane copyback (i.e., 0x0032) and multiplane read (i.e., 0x0032) are identical, we change the code of multiplane copyback 0x0032 to 0x00321 so that we can differentiate copyback multiplane from normal multiplane
 #define CMD_PROGRAM 0x8000
 #define CMD_PROGRAM_PAGE 0x8010
+#define CMD_PROGRAM_PAGE_CACHE 0x8015
 #define CMD_PROGRAM_PAGE_MULTIPLANE 0x8011
 #define CMD_PROGRAM_PAGE_COPYBACK 0x8510
 #define CMD_PROGRAM_PAGE_COPYBACK_MULTIPLANE 0x85111 //since the codes of multiplane copyback (i.e., 0x8511) and multiplane program (i.e., 0x8511) are identical, we change the code of multiplane copyback 0x8511 to 0x85111 so that we can differentiate copyback multiplane from normal multiplane

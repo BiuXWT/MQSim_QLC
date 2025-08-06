@@ -1,4 +1,4 @@
-
+﻿
 #include "../nvm_chip/flash_memory/Physical_Page_Address.h"
 #include "Flash_Block_Manager.h"
 #include "Stats.h"
@@ -110,14 +110,14 @@ namespace SSD_Components
 
 	inline void Flash_Block_Manager::Invalidate_page_in_block(const stream_id_type stream_id, const NVM::FlashMemory::Physical_Page_Address& page_address)
 	{
-		PlaneBookKeepingType* plane_record = &plane_manager[page_address.ChannelID][page_address.ChipID][page_address.DieID][page_address.PlaneID];
-		plane_record->Invalid_pages_count++;
-		plane_record->Valid_pages_count--;
+		PlaneBookKeepingType* plane_record = Get_plane_bookkeeping_entry(page_address);
+		plane_record->Invalid_pages_count++;//plane中无效页 +1
+		plane_record->Valid_pages_count--;//有效页-1
 		if (plane_record->Blocks[page_address.BlockID].Stream_id != stream_id) {
 			PRINT_ERROR("Inconsistent status in the Invalidate_page_in_block function! The accessed block is not allocated to stream " << stream_id)
 		}
-		plane_record->Blocks[page_address.BlockID].Invalid_page_count++;
-		plane_record->Blocks[page_address.BlockID].Invalid_page_bitmap[page_address.PageID / 64] |= ((uint64_t)0x1) << (page_address.PageID % 64);
+		plane_record->Blocks[page_address.BlockID].Invalid_page_count++;//block中无效页 +1
+		plane_record->Blocks[page_address.BlockID].Invalid_page_bitmap[page_address.PageID / 64] |= ((uint64_t)0x1) << (page_address.PageID % 64);//标记无效页的位置
 	}
 
 	inline void Flash_Block_Manager::Invalidate_page_in_block_for_preconditioning(const stream_id_type stream_id, const NVM::FlashMemory::Physical_Page_Address& page_address)
