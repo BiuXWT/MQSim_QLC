@@ -1,4 +1,4 @@
-#ifndef NVM_TRANSACTION_FLASH_WR
+﻿#ifndef NVM_TRANSACTION_FLASH_WR
 #define NVM_TRANSACTION_FLASH_WR
 
 #include "../nvm_chip/flash_memory/FlashTypes.h"
@@ -28,7 +28,9 @@ namespace SSD_Components
 		NVM_Transaction_Flash_WR(Transaction_Source_Type source, stream_id_type stream_id,
 			unsigned int data_size_in_byte, LPA_type lpa, SSD_Components::User_Request* user_io_request, NVM::memory_content_type content,
 			page_status_type write_sectors_bitmap, data_timestamp_type data_timestamp);
-		NVM::memory_content_type Content; //The content of this transaction
+		//要写入的数据
+		NVM::memory_content_type Content; 
+		//如果这个写请求之前必须有一个读（对于部分页面写），这个变量被用来指向相应的读请求
 		NVM_Transaction_Flash_RD* RelatedRead; //If this write request must be preceded by a read (for partial page write), this variable is used to point to the corresponding read request
 		NVM_Transaction_Flash_ER* RelatedErase;
 		page_status_type write_sectors_bitmap;

@@ -1,4 +1,4 @@
-#ifndef NVM_TRANSACTION_FLASH_RD_H
+﻿#ifndef NVM_TRANSACTION_FLASH_RD_H
 #define NVM_TRANSACTION_FLASH_RD_H
 
 #include "../nvm_chip/flash_memory/FlashTypes.h"
@@ -27,7 +27,9 @@ namespace SSD_Components
 			unsigned int data_size_in_byte, LPA_type lpa, PPA_type ppa,
 			SSD_Components::User_Request* related_user_IO_request, NVM::memory_content_type content,
 			page_status_type read_sectors_bitmap, data_timestamp_type data_timestamp);
+		// 数据内容
 		NVM::memory_content_type Content; //The content of this transaction
+		//这个读取请求是否与另一个写入请求相关，并提供更新数据（用于部分页面写入）
 		NVM_Transaction_Flash_WR* RelatedWrite;		//Is this read request related to another write request and provides update data (for partial page write)
 		page_status_type read_sectors_bitmap;
 		data_timestamp_type DataTimeStamp;

@@ -601,6 +601,7 @@ namespace SSD_Components
 	* 此功能仅在地址转换条目存在于 CMT 时调用。
 	* 否则，此函数中的 CMT->Rerieve_ppa 调用将抛出异常。
 	*/
+	//从domain中的CMT或GlobalMappingTable中获取lpa对应的ppa
 	bool Address_Mapping_Unit_Page_Level::translate_lpa_to_ppa(stream_id_type streamID, NVM_Transaction_Flash* transaction)
 	{
 		//从缓存中获取LPA对应的PPA
@@ -857,6 +858,7 @@ namespace SSD_Components
 	void Address_Mapping_Unit_Page_Level::allocate_plane_for_preconditioning(stream_id_type stream_id, LPA_type lpn, NVM::FlashMemory::Physical_Page_Address& targetAddress)
 	{
 		AddressMappingDomain* domain = domains[stream_id];
+
 		switch (domain->PlaneAllocationScheme) {
 		case Flash_Plane_Allocation_Scheme_Type::CWDP:
 			targetAddress.ChannelID = domain->Channel_ids[(unsigned int)(lpn % domain->Channel_no)];
@@ -1492,16 +1494,18 @@ namespace SSD_Components
 		MVPN_type mvpn = get_MVPN(lpa, stream_id);
 
 		/*This is the first time that a user request accesses this address.
-		Just create an entry in cache! No flash read is needed.*/
+		Just create an entry in cache! No flash read is needed.
+		这是用户请求第一次访问这个LPA。只需在缓存中创建一个条目！不需要闪存读取。*/
 		if (domain->GlobalTranslationDirectory[mvpn].MPPN == NO_MPPN) {
 			if (!domain->CMT->Check_free_slot_availability()) {
+				//如果CMT没有空间，则要驱逐一个缓存条目，若被驱逐的条目是脏的，则将此条目的映射信息写入GMT
 				LPA_type evicted_lpa;
 				CMTSlotType evictedItem = domain->CMT->Evict_one_slot(evicted_lpa);
 				if (evictedItem.Dirty) {
 					/* In order to eliminate possible race conditions for the requests that
 					* will access the evicted lpa in the near future (before the translation
 					* write finishes), MQSim updates GMT (the on flash mapping table) right
-					* after eviction happens.*/
+					* after eviction happens.为了消除可能出现的竞争条件，尤其是那些将在不久的将来访问被驱逐的LPA（逻辑页地址）的请求（在翻译写入完成之前），MQSim 在驱逐发生后立即更新GMT（闪存映射表）。*/
 					domain->GlobalMappingTable[evicted_lpa].PPA = evictedItem.PPA;
 					domain->GlobalMappingTable[evicted_lpa].WrittenStateBitmap = evictedItem.WrittenStateBitmap;
 					if (domain->GlobalMappingTable[evicted_lpa].TimeStamp > CurrentTimeStamp)
@@ -1521,7 +1525,12 @@ namespace SSD_Components
 		* 1. A read has been issued to retrieve unchanged parts of the mapping data and merge them
 		*     with the changed parts (i.e., an update read of MVP). This read will be followed
 		*     by a writeback of MVP content to a new flash page.
-		* 2. A read has been issued to retrieve the mapping data for some previous user requests*/
+		* 2. A read has been issued to retrieve the mapping data for some previous user requests
+		正在进行读事务以检索MVP内容。
+		* 这种情况可能发生在两种不同的情况下：
+		* 1. 已发出读请求以检索映射数据中未更改的部分并将其与更改过的部分合并*     
+		（即MVP的更新读取）。此读取后将进行MVP内容写回到新的闪存页面。
+		* 2. 已发出读请求以检索一些先前用户请求的映射数据。*/
 		if (domain->ArrivingMappingEntries.find(mvpn) != domain->ArrivingMappingEntries.end())
 		{
 			if (domain->CMT->Is_slot_reserved_for_lpn_and_waiting(stream_id, lpa)) {
@@ -1534,7 +1543,9 @@ namespace SSD_Components
 						/* In order to eliminate possible race conditions for the requests that
 						* will access the evicted lpa in the near future (before the translation
 						* write finishes), MQSim updates GMT (the on flash mapping table) right
-						* after eviction happens.*/
+						* after eviction happens.
+						为了消除对即将访问被驱逐的 LPA 的请求可能出现的竞争条件，
+						MQSim 在驱逐发生后立即更新 GMT（闪存映射表），以防在翻译写入完成之前发生访问。*/
 						domain->GlobalMappingTable[evicted_lpa].PPA = evictedItem.PPA;
 						domain->GlobalMappingTable[evicted_lpa].WrittenStateBitmap = evictedItem.WrittenStateBitmap;
 						if (domain->GlobalMappingTable[evicted_lpa].TimeStamp > CurrentTimeStamp)
@@ -1551,7 +1562,8 @@ namespace SSD_Components
 		}
 
 		/*MQSim assumes that the data of all departing (evicted from CMT) translation pages are in memory, until
-		the flash program operation finishes and the entry it is cleared from DepartingMappingEntries.*/
+		the flash program operation finishes and the entry it is cleared from DepartingMappingEntries.
+		MQSim假设所有离开（从CMT驱逐）的翻译页面的数据都在内存中，直到闪存编程操作完成并且条目从DepartingMappingEntries中清除。*/
 		if (domain->DepartingMappingEntries.find(mvpn) != domain->DepartingMappingEntries.end()) {
 			if (!domain->CMT->Check_free_slot_availability()) {
 				LPA_type evicted_lpa;
@@ -1570,8 +1582,9 @@ namespace SSD_Components
 				}
 			}
 			domain->CMT->Reserve_slot_for_lpn(stream_id, lpa);
-			/*Hack: since we do not actually save the values of translation requests, we copy the mapping
-			data from GlobalMappingTable (which actually must be stored on flash)*/
+			/*Hack 技巧: since we do not actually save the values of translation requests, we copy the mapping
+			data from GlobalMappingTable (which actually must be stored on flash)
+			由于我们实际上并不保存翻译请求的值，我们从全局映射表中复制映射（它实际上必须存储在闪存中）*/
 			domain->CMT->Insert_new_mapping_info(stream_id, lpa,
 				domain->GlobalMappingTable[lpa].PPA, domain->GlobalMappingTable[lpa].WrittenStateBitmap);
 			
@@ -1614,9 +1627,10 @@ namespace SSD_Components
 			//Writing back all dirty CMT entries that fall into the same translation virtual page (MVPN)
 			unsigned int read_size = 0;
 			page_status_type readSectorsBitmap = 0;
-			LPA_type startLPN = get_start_LPN_in_MVP(mvpn);
-			LPA_type endLPN = get_end_LPN_in_MVP(mvpn);
+			LPA_type startLPN = get_start_LPN_in_MVP(mvpn);//当前页中的起始LPA号
+			LPA_type endLPN = get_end_LPN_in_MVP(mvpn);//当前页中的结束LPA号
 			for (LPA_type lpn_itr = startLPN; lpn_itr <= endLPN; lpn_itr++) {
+				//遍历当前范围内的脏条目，驱逐出CMT并写回GlobalMappingTable
 				if (domains[stream_id]->CMT->Exists(stream_id, lpn_itr)) {
 					if (domains[stream_id]->CMT->Is_dirty(stream_id, lpn_itr)) {
 						domains[stream_id]->CMT->Make_clean(stream_id, lpn_itr);
@@ -1632,6 +1646,7 @@ namespace SSD_Components
 			}
 
 			//Read the unchaged mapping entries from flash to merge them with updated parts of MVPN
+			//从闪存中读取未更改的映射条目，以将其与 MVPN 的更新部分合并。
 			NVM_Transaction_Flash_RD* readTR = NULL;
 			MPPN_type mppn = domains[stream_id]->GlobalTranslationDirectory[mvpn].MPPN;
 			if (mppn != NO_MPPN) {

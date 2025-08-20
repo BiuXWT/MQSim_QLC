@@ -15,8 +15,8 @@ namespace SSD_Components
 	class FTL;
 	class Flash_Block_Manager_Base;
 
-	typedef uint32_t MVPN_type;
-	typedef uint32_t MPPN_type;
+	typedef uint32_t MVPN_type;//虚拟翻译页号，是逻辑页地址（LPA）在翻译页表（GTD）中的索引。
+	typedef uint32_t MPPN_type;//物理翻译页号，是翻译页在闪存中的物理地址。
 
 	enum class Flash_Address_Mapping_Type {PAGE_LEVEL, HYBRID};
 	enum class Flash_Plane_Allocation_Scheme_Type

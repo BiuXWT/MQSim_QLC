@@ -117,6 +117,7 @@ namespace SSD_Components
 		/*Stores the mapping of Virtual Translation Page Number (MVPN) to Physical Translation Page Number (MPPN).
 		* It is always kept in volatile memory.
 		存储虚拟页号 (MVPN) 到物理页号 (MPPN) 的映射。它始终保存在易失性内存中。*/
+		// 即一级映射，保存LPA->PPA这个映射数据的映射，存储的对应LPA所在的flash位置
 		GTDEntryType* GlobalTranslationDirectory; //全局翻译目录（GTD），存储 MVPN(虚拟页号) 到 MPPN（物理页号） 的映射
 
 		/*The cached mapping table that is implemented based on the DFLT (Gupta et al., ASPLOS 2009) proposal.
@@ -224,6 +225,7 @@ namespace SSD_Components
 		void allocate_plane_for_translation_write(NVM_Transaction_Flash* transaction);
 		void allocate_page_in_plane_for_translation_write(NVM_Transaction_Flash* transaction, MVPN_type mvpn, bool is_for_gc);
 		void allocate_plane_for_preconditioning(stream_id_type stream_id, LPA_type lpn, NVM::FlashMemory::Physical_Page_Address& targetAddress);
+		//通过GTD到flash中读取当前lpa的ppa
 		bool request_mapping_entry(const stream_id_type streamID, const LPA_type lpn);
 		static void handle_transaction_serviced_signal_from_PHY(NVM_Transaction_Flash* transaction);
 		bool translate_lpa_to_ppa(stream_id_type streamID, NVM_Transaction_Flash* transaction);
@@ -235,7 +237,9 @@ namespace SSD_Components
 		void generate_flash_writeback_request_for_mapping_data(const stream_id_type streamID, const LPA_type lpn);
 
 		unsigned int no_of_translation_entries_per_page;
-		MVPN_type get_MVPN(const LPA_type lpn, stream_id_type stream_id);//mapping of Virtual Translation Page Number (MVPN)
+		//mapping of Virtual Translation Page Number (MVPN)
+		//获取LPA在GTD中的索引
+		MVPN_type get_MVPN(const LPA_type lpn, stream_id_type stream_id);
 		LPA_type get_start_LPN_in_MVP(const MVPN_type);
 		LPA_type get_end_LPN_in_MVP(const MVPN_type);
 
