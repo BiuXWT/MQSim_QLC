@@ -23,6 +23,7 @@ unsigned int Flash_Parameter_Set::Block_No_Per_Plane = 2048;
 unsigned int Flash_Parameter_Set::Page_No_Per_Block = 256;//Page no per block
 unsigned int Flash_Parameter_Set::Page_Capacity = 8192;//Flash page capacity in bytes
 unsigned int Flash_Parameter_Set::Page_Metadat_Capacity = 448;//Flash page capacity in bytes
+unsigned int Flash_Parameter_Set::Init_Bad_Block_Ratio = 1;
 
 void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 {
@@ -141,6 +142,10 @@ void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	val = std::to_string(Page_Metadat_Capacity);
 	xmlwriter.Write_attribute_string(attr, val);
 
+	attr = "Init_Bad_Block_Ratio";
+	val = std::to_string(Init_Bad_Block_Ratio);
+	xmlwriter.Write_attribute_string(attr, val);
+
 	xmlwriter.Write_close_tag();
 }
 
@@ -222,6 +227,9 @@ void Flash_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 			} else if (strcmp(param->name(), "Page_Metadat_Capacity") == 0) {
 				std::string val = param->value();
 				Page_Metadat_Capacity = std::stoul(val);
+			} else if (strcmp(param->name(), "Init_Bad_Block_Ratio") == 0) {
+				std::string val = param->value();
+				Init_Bad_Block_Ratio = std::stoul(val);
 			}
 		}
 	} catch (...) {

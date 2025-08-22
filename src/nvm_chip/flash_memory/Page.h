@@ -12,6 +12,7 @@ namespace NVM
 		{
 			//page_status_type Status;
 			LPA_type LPA;
+			uint8_t BAD;
 		};
 
 		class Page {
@@ -20,6 +21,7 @@ namespace NVM
 			{
 				//Metadata.Status = FREE_PAGE;
 				Metadata.LPA = NO_LPA;
+				Metadata.BAD = 0xff;
 				//Metadata.SourceStreamID = NO_STREAM;
 			};
 			
@@ -33,6 +35,14 @@ namespace NVM
 			void Read_metadata(PageMetadata& metadata)
 			{
 				metadata.LPA = this->Metadata.LPA;
+			}
+			void Set_bad()
+			{
+				this->Metadata.BAD = 0x00; // Mark as bad
+			}
+			void Read_bad(uint8_t& bad)
+			{
+				bad = this->Metadata.BAD;
 			}
 		};
 	}

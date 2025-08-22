@@ -582,7 +582,8 @@ namespace SSD_Components
 				dram_execution_queue[request_info->Stream_id].push(request_info);
 			}
 		} else {
-			Simulator->Register_sim_event(Simulator->Time() + estimate_dram_access_time(request_info->Size_in_bytes, dram_row_size, dram_busrt_size, dram_burst_transfer_time_ddr, dram_tRCD, dram_tCL, dram_tRP),
+			Simulator->Register_sim_event(Simulator->Time() + estimate_dram_access_time(request_info->Size_in_bytes, dram_row_size,
+				dram_busrt_size, dram_burst_transfer_time_ddr, dram_tRCD, dram_tCL, dram_tRP),
 				this, request_info, static_cast<int>(request_info->next_event_type));
 			memory_channel_is_busy = true;
 			dram_execution_list_turn = request_info->Stream_id;

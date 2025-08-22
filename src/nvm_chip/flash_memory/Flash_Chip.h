@@ -1,4 +1,4 @@
-#ifndef FLASH_CHIP_H
+ï»¿#ifndef FLASH_CHIP_H
 #define FLASH_CHIP_H
 
 #include "../../sim/Sim_Defs.h"
@@ -23,7 +23,8 @@ namespace NVM
 		public:
 			Flash_Chip(const sim_object_id_type&, flash_channel_ID_type channelID, flash_chip_ID_type localChipID,
 				Flash_Technology_Type flash_technology, 
-				unsigned int dieNo, unsigned int PlaneNoPerDie, unsigned int Block_no_per_plane, unsigned int Page_no_per_block,
+				unsigned int dieNo, unsigned int PlaneNoPerDie, unsigned int Block_no_per_plane, unsigned int Page_no_per_block, 
+				unsigned int Bad_block_ratio,
 				sim_time_type *readLatency, sim_time_type *programLatency, sim_time_type eraseLatency,
 				sim_time_type suspendProgramLatency, sim_time_type suspendEraseLatency,
 				sim_time_type commProtocolDelayRead = 20, sim_time_type commProtocolDelayWrite = 0, sim_time_type commProtocolDelayErase = 0);
@@ -114,16 +115,17 @@ namespace NVM
 						throw std::invalid_argument("Unsupported command for flash chip.");
 				}
 			}
-			//¹ÒÆğDieÕıÔÚÖ´ĞĞµÄÃüÁî
+			//æŒ‚èµ·Dieæ­£åœ¨æ‰§è¡Œçš„å‘½ä»¤
 			void Suspend(flash_die_ID_type dieID);
-			//»Ö¸´Ö´ĞĞ¹ÒÆğµÄDieÖĞµÄÃüÁî
+			//æ¢å¤æ‰§è¡ŒæŒ‚èµ·çš„Dieä¸­çš„å‘½ä»¤
 			void Resume(flash_die_ID_type dieID); 
 			sim_time_type GetSuspendProgramTime();
 			sim_time_type GetSuspendEraseTime();
 			void Report_results_in_XML(std::string name_prefix, Utils::XmlWriter& xmlwriter);
 			//A simplification to decrease the complexity of GC execution! The GC unit may need to know the metadata of a page to decide if a page is valid or invalid. 
-			//¼ò»¯GCÖ´ĞĞµÄ¸´ÔÓ¶È£¡GCµ¥Ôª¿ÉÄÜĞèÒªÖªµÀÒ³ÃæµÄÔªÊı¾İ£¬ÒÔÈ·¶¨Ò³ÃæÊÇ·ñÓĞĞ§¡£
+			//ç®€åŒ–GCæ‰§è¡Œçš„å¤æ‚åº¦ï¼GCå•å…ƒå¯èƒ½éœ€è¦çŸ¥é“é¡µé¢çš„å…ƒæ•°æ®ï¼Œä»¥ç¡®å®šé¡µé¢æ˜¯å¦æœ‰æ•ˆã€‚
 			LPA_type Get_metadata(flash_die_ID_type die_id, flash_plane_ID_type plane_id, flash_block_ID_type block_id, flash_page_ID_type page_id);
+			bool Is_block_bad(flash_die_ID_type die_id, flash_plane_ID_type plane_id, flash_block_ID_type block_id);
 		private:
 			Flash_Technology_Type flash_technology;
 			Internal_Status status;

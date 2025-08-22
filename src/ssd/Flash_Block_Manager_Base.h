@@ -35,7 +35,6 @@ namespace SSD_Components
 		flash_page_ID_type Current_page_write_index;
 		//管理块的状态,防止 GC 与用户 I/O 请求之间的竞争条件
 		Block_Service_Status Current_status;
-		bool bad_block=false;//标记是否为坏块
 	//页面有效性管理
 		unsigned int Invalid_page_count;//无效页计数
 		//静态变量，表示每个块中页面数量对应的位图大小（以 uint64_t 为单位）
@@ -69,7 +68,6 @@ namespace SSD_Components
 		unsigned int Invalid_pages_count;	//当前 Plane 中无效页数
 		//块管理
 		Block_Pool_Slot_Type* Blocks;
-		Block_Pool_Slot_Type *Bad_Blocks;
 		std::multimap<unsigned int, Block_Pool_Slot_Type*> Free_block_pool;//用于存储当前 Plane 中可用的空闲块<Erase_count,Block>
 		//写入前沿，即open-block，当前正在被写入的Block
 		//The write frontier blocks for data and GC pages. MQSim adopts Double Write Frontier approach for user and GC writes which is shown very advantages in: B. Van Houdt, "On the necessity of hot and cold data identification to reduce the write amplification in flash - based SSDs", Perf. Eval., 2014

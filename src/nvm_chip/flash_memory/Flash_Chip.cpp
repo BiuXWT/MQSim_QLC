@@ -10,6 +10,7 @@ namespace NVM
 		Flash_Chip::Flash_Chip(const sim_object_id_type& id, flash_channel_ID_type channelID, flash_chip_ID_type localChipID,
 			Flash_Technology_Type flash_technology, 
 			unsigned int dieNo, unsigned int PlaneNoPerDie, unsigned int Block_no_per_plane, unsigned int Page_no_per_block,
+			unsigned int Bad_block_ratio,
 			sim_time_type* readLatency, sim_time_type* programLatency, sim_time_type eraseLatency,
 			sim_time_type suspendProgramLatency, sim_time_type suspendEraseLatency,
 			sim_time_type commProtocolDelayRead, sim_time_type commProtocolDelayWrite, sim_time_type commProtocolDelayErase)
@@ -34,7 +35,7 @@ namespace NVM
 			idleDieNo = dieNo;
 			Dies = new Die*[dieNo];
 			for (unsigned int dieID = 0; dieID < dieNo; dieID++) {
-				Dies[dieID] = new Die(PlaneNoPerDie, Block_no_per_plane, Page_no_per_block);
+				Dies[dieID] = new Die(PlaneNoPerDie, Block_no_per_plane, Page_no_per_block, Bad_block_ratio);
 			}
 		}
 
@@ -99,7 +100,14 @@ namespace NVM
 			return Dies[die_id]->Planes[plane_id]->Blocks[block_id]->Pages[page_id].Metadata.LPA;
 		}
 
-		void Flash_Chip::start_command_execution(Flash_Command* command)
+        bool Flash_Chip::Is_block_bad(flash_die_ID_type die_id, flash_plane_ID_type plane_id, flash_block_ID_type block_id)
+        {
+            auto first_page = Dies[die_id]->Planes[plane_id]->Blocks[block_id]->Pages[0];
+			auto last_page = Dies[die_id]->Planes[plane_id]->Blocks[block_id]->Pages[page_no_per_block - 1];
+			return (first_page.Metadata.BAD == 0x00 && last_page.Metadata.BAD == 0x00);
+        }
+
+        void Flash_Chip::start_command_execution(Flash_Command* command)
 		{
 			Die* targetDie = Dies[command->Address[0].DieID];
 

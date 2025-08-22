@@ -28,6 +28,7 @@ public:
 	static unsigned int Page_No_Per_Block;//Page no per block
 	static unsigned int Page_Capacity;//Flash page capacity in bytes
 	static unsigned int Page_Metadat_Capacity;//Flash page metadata capacity in bytes
+	static unsigned int Init_Bad_Block_Ratio;//Percentage of bad blocks in the flash memory
 	void XML_serialize(Utils::XmlWriter& xmlwriter);
 	void XML_deserialize(rapidxml::xml_node<> *node);
 };

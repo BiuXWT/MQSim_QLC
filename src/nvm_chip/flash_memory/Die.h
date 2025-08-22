@@ -13,7 +13,7 @@ namespace NVM
 		class Die
 		{
 		public:
-			Die(unsigned int PlanesNoPerDie, unsigned int BlocksNoPerPlane, unsigned int PagesNoPerBlock);
+			Die(unsigned int PlanesNoPerDie, unsigned int BlocksNoPerPlane, unsigned int PagesNoPerBlock, unsigned int BadBlockRatio);
 			~Die();
 			Plane** Planes;
 			unsigned int Plane_no;

@@ -16,27 +16,27 @@ namespace SSD_Components {
 		WaitingGCRead_TX = new Flash_Transaction_Queue[channel_count];
 		WaitingMappingRead_TX = new Flash_Transaction_Queue[channel_count];
 		WaitingCopybackWrites = new std::list<DieBookKeepingEntry*>[channel_count];
-		bookKeepingTable = new ChipBookKeepingEntry*[channel_count];
+		chipBookingTable = new ChipBookKeepingEntry*[channel_count];
 		for (unsigned int channelID = 0; channelID < channel_count; channelID++) {
-			bookKeepingTable[channelID] = new ChipBookKeepingEntry[chip_no_per_channel];
+			chipBookingTable[channelID] = new ChipBookKeepingEntry[chip_no_per_channel];
 			for (unsigned int chipID = 0; chipID < chip_no_per_channel; chipID++) {
-				bookKeepingTable[channelID][chipID].Expected_command_exec_finish_time = T0; 
-				bookKeepingTable[channelID][chipID].Last_transfer_finish_time = T0;
-				bookKeepingTable[channelID][chipID].Die_book_keeping_records = new DieBookKeepingEntry[DieNoPerChip];
-				bookKeepingTable[channelID][chipID].Status = ChipStatus::IDLE;
-				bookKeepingTable[channelID][chipID].HasSuspend = false;
-				bookKeepingTable[channelID][chipID].WaitingReadTXCount = 0;
-				bookKeepingTable[channelID][chipID].No_of_active_dies = 0;
+				chipBookingTable[channelID][chipID].Expected_command_exec_finish_time = T0; 
+				chipBookingTable[channelID][chipID].Last_transfer_finish_time = T0;
+				chipBookingTable[channelID][chipID].Die_book_keeping_records = new DieBookKeepingEntry[DieNoPerChip];
+				chipBookingTable[channelID][chipID].Status = ChipStatus::IDLE;
+				chipBookingTable[channelID][chipID].HasSuspend = false;
+				chipBookingTable[channelID][chipID].WaitingReadTXCount = 0;
+				chipBookingTable[channelID][chipID].No_of_active_dies = 0;
 				for (unsigned int dieID = 0; dieID < DieNoPerChip; dieID++) {
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].ActiveCommand = NULL;
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].ActiveTransactions.clear();
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].SuspendedCommand = NULL;
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].SuspendedTransactions.clear();
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].Free = true;
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].Suspended = false;
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].DieInterleavedTime = INVALID_TIME;
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].Expected_finish_time = INVALID_TIME;
-					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].RemainingExecTime = INVALID_TIME;
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].ActiveCommand = NULL;
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].ActiveTransactions.clear();
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].SuspendedCommand = NULL;
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].SuspendedTransactions.clear();
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].Free = true;
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].Suspended = false;
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].DieInterleavedTime = INVALID_TIME;
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].Expected_finish_time = INVALID_TIME;
+					chipBookingTable[channelID][chipID].Die_book_keeping_records[dieID].RemainingExecTime = INVALID_TIME;
 				}
 			}
 		}
@@ -78,17 +78,17 @@ namespace SSD_Components {
 
 	inline bool NVM_PHY_ONFI_NVDDR2::HasSuspendedCommand(NVM::FlashMemory::Flash_Chip* chip)
 	{
-		return bookKeepingTable[chip->ChannelID][chip->ChipID].HasSuspend;
+		return chipBookingTable[chip->ChannelID][chip->ChipID].HasSuspend;
 	}
 
 	inline ChipStatus NVM_PHY_ONFI_NVDDR2::GetChipStatus(NVM::FlashMemory::Flash_Chip* chip)
 	{
-		return bookKeepingTable[chip->ChannelID][chip->ChipID].Status;
+		return chipBookingTable[chip->ChannelID][chip->ChipID].Status;
 	}
 	
 	inline sim_time_type NVM_PHY_ONFI_NVDDR2::Expected_finish_time(NVM::FlashMemory::Flash_Chip* chip)
 	{
-		return bookKeepingTable[chip->ChannelID][chip->ChipID].Expected_command_exec_finish_time;
+		return chipBookingTable[chip->ChannelID][chip->ChipID].Expected_command_exec_finish_time;
 	}
 
 	sim_time_type NVM_PHY_ONFI_NVDDR2::Expected_finish_time(NVM_Transaction_Flash* transaction)
@@ -104,7 +104,7 @@ namespace SSD_Components {
 
 	NVM_Transaction_Flash* NVM_PHY_ONFI_NVDDR2::Is_chip_busy_with_stream(NVM_Transaction_Flash* transaction)
 	{
-		ChipBookKeepingEntry* chipBKE = &bookKeepingTable[transaction->Address.ChannelID][transaction->Address.ChipID];
+		ChipBookKeepingEntry* chipBKE = &chipBookingTable[transaction->Address.ChannelID][transaction->Address.ChipID];
 		stream_id_type stream_id = transaction->Stream_id;
 
 		for (unsigned int die_id = 0; die_id < die_no_per_chip; die_id++) {
@@ -120,7 +120,7 @@ namespace SSD_Components {
 
 	bool NVM_PHY_ONFI_NVDDR2::Is_chip_busy(NVM_Transaction_Flash* transaction)
 	{
-		ChipBookKeepingEntry* chipBKE = &bookKeepingTable[transaction->Address.ChannelID][transaction->Address.ChipID];
+		ChipBookKeepingEntry* chipBKE = &chipBookingTable[transaction->Address.ChannelID][transaction->Address.ChipID];
 		return (chipBKE->Status != ChipStatus::IDLE);
 	}
 
@@ -134,7 +134,7 @@ namespace SSD_Components {
 		ONFI_Channel_NVDDR2* target_channel = channels[transaction_list.front()->Address.ChannelID];
 
 		NVM::FlashMemory::Flash_Chip* targetChip = target_channel->Chips[transaction_list.front()->Address.ChipID];
-		ChipBookKeepingEntry* chipBKE = &bookKeepingTable[transaction_list.front()->Address.ChannelID][transaction_list.front()->Address.ChipID];
+		ChipBookKeepingEntry* chipBKE = &chipBookingTable[transaction_list.front()->Address.ChannelID][transaction_list.front()->Address.ChipID];
 		DieBookKeepingEntry* dieBKE = &chipBKE->Die_book_keeping_records[transaction_list.front()->Address.DieID];
 
 		/*If this is not a die-interleaved command execution, and the channel is already busy,
@@ -343,7 +343,7 @@ namespace SSD_Components {
 		flash_channel_ID_type channel_id = dieBKE->ActiveTransactions.front()->Address.ChannelID;
 		ONFI_Channel_NVDDR2* targetChannel = channels[channel_id];
 		NVM::FlashMemory::Flash_Chip* targetChip = targetChannel->Chips[dieBKE->ActiveTransactions.front()->Address.ChipID];
-		ChipBookKeepingEntry *chipBKE = &bookKeepingTable[channel_id][targetChip->ChipID];
+		ChipBookKeepingEntry *chipBKE = &chipBookingTable[channel_id][targetChip->ChipID];
 
 		switch ((NVDDR2_SimEventType)ev->Type) {
 			case NVDDR2_SimEventType::READ_CMD_ADDR_TRANSFERRED:
@@ -441,7 +441,7 @@ namespace SSD_Components {
 		if (WaitingCopybackWrites[channel_id].size() > 0) {
 			DieBookKeepingEntry* waitingBKE = WaitingCopybackWrites[channel_id].front();
 			targetChip = channels[channel_id]->Chips[waitingBKE->ActiveTransactions.front()->Address.ChipID];
-			ChipBookKeepingEntry* waitingChipBKE = &bookKeepingTable[channel_id][targetChip->ChipID];
+			ChipBookKeepingEntry* waitingChipBKE = &chipBookingTable[channel_id][targetChip->ChipID];
 			if (waitingBKE->ActiveTransactions.size() > 1) {
 				Stats::IssuedMultiplaneCopybackProgramCMD++;
 				waitingBKE->ActiveCommand->CommandCode = CMD_PROGRAM_PAGE_COPYBACK_MULTIPLANE;
@@ -468,22 +468,22 @@ namespace SSD_Components {
 		} else if (WaitingMappingRead_TX[channel_id].size() > 0) {
 			NVM_Transaction_Flash_RD* waitingTR = (NVM_Transaction_Flash_RD*)WaitingMappingRead_TX[channel_id].front();
 			WaitingMappingRead_TX[channel_id].pop_front();
-			transfer_read_data_from_chip(&bookKeepingTable[channel_id][waitingTR->Address.ChipID],
-				&(bookKeepingTable[channel_id][waitingTR->Address.ChipID].Die_book_keeping_records[waitingTR->Address.DieID]), waitingTR);
+			transfer_read_data_from_chip(&chipBookingTable[channel_id][waitingTR->Address.ChipID],
+				&(chipBookingTable[channel_id][waitingTR->Address.ChipID].Die_book_keeping_records[waitingTR->Address.DieID]), waitingTR);
 
 			return;
 		} else if (WaitingReadTX[channel_id].size() > 0) {
 			NVM_Transaction_Flash_RD* waitingTR = (NVM_Transaction_Flash_RD*)WaitingReadTX[channel_id].front();
 			WaitingReadTX[channel_id].pop_front();
-			transfer_read_data_from_chip(&bookKeepingTable[channel_id][waitingTR->Address.ChipID],
-				&(bookKeepingTable[channel_id][waitingTR->Address.ChipID].Die_book_keeping_records[waitingTR->Address.DieID]), waitingTR);
+			transfer_read_data_from_chip(&chipBookingTable[channel_id][waitingTR->Address.ChipID],
+				&(chipBookingTable[channel_id][waitingTR->Address.ChipID].Die_book_keeping_records[waitingTR->Address.DieID]), waitingTR);
 
 			return;
 		} else if (WaitingGCRead_TX[channel_id].size() > 0) {
 			NVM_Transaction_Flash_RD* waitingTR = (NVM_Transaction_Flash_RD*)WaitingGCRead_TX[channel_id].front();
 			WaitingGCRead_TX[channel_id].pop_front();
-			transfer_read_data_from_chip(&bookKeepingTable[channel_id][waitingTR->Address.ChipID],
-				&(bookKeepingTable[channel_id][waitingTR->Address.ChipID].Die_book_keeping_records[waitingTR->Address.DieID]), waitingTR);
+			transfer_read_data_from_chip(&chipBookingTable[channel_id][waitingTR->Address.ChipID],
+				&(chipBookingTable[channel_id][waitingTR->Address.ChipID].Die_book_keeping_records[waitingTR->Address.DieID]), waitingTR);
 			return;
 		}
 
@@ -493,7 +493,7 @@ namespace SSD_Components {
 
 	inline void NVM_PHY_ONFI_NVDDR2::handle_ready_signal_from_chip(NVM::FlashMemory::Flash_Chip* chip, NVM::FlashMemory::Flash_Command* command)
 	{
-		ChipBookKeepingEntry *chipBKE = &_my_instance->bookKeepingTable[chip->ChannelID][chip->ChipID];
+		ChipBookKeepingEntry *chipBKE = &_my_instance->chipBookingTable[chip->ChannelID][chip->ChipID];
 		DieBookKeepingEntry *dieBKE = &(chipBKE->Die_book_keeping_records[command->Address[0].DieID]);
 
 		switch (command->CommandCode)
@@ -647,26 +647,26 @@ namespace SSD_Components {
 		{
 			case Transaction_Type::READ:
 				chip->StartCMDXfer();
-				bookKeepingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_IN;
+				chipBookingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_IN;
 				Simulator->Register_sim_event(Simulator->Time() + bookKeepingEntry->DieInterleavedTime,
 					this, bookKeepingEntry, (int)NVDDR2_SimEventType::READ_CMD_ADDR_TRANSFERRED);
 				break;
 			case Transaction_Type::WRITE:
 				if (((NVM_Transaction_Flash_WR*)bookKeepingEntry->ActiveTransactions.front())->RelatedRead == NULL) {
 					chip->StartCMDDataInXfer();
-					bookKeepingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_DATA_IN;
+					chipBookingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_DATA_IN;
 					Simulator->Register_sim_event(Simulator->Time() + bookKeepingEntry->DieInterleavedTime,
 						this, bookKeepingEntry, (int)NVDDR2_SimEventType::PROGRAM_CMD_ADDR_DATA_TRANSFERRED);
 				} else {
 					chip->StartCMDXfer();
-					bookKeepingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_IN;
+					chipBookingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_IN;
 					Simulator->Register_sim_event(Simulator->Time() + bookKeepingEntry->DieInterleavedTime, this,
 						bookKeepingEntry, (int)NVDDR2_SimEventType::READ_CMD_ADDR_TRANSFERRED);
 				}
 				break;
 			case Transaction_Type::ERASE:
 				chip->StartCMDXfer();
-				bookKeepingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_IN;
+				chipBookingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_IN;
 				Simulator->Register_sim_event(Simulator->Time() + bookKeepingEntry->DieInterleavedTime,
 					this, bookKeepingEntry, (int)NVDDR2_SimEventType::ERASE_SETUP_COMPLETED);
 				break;

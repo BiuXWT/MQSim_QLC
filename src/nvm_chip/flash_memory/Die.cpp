@@ -4,7 +4,7 @@ namespace NVM
 {
 	namespace FlashMemory
 	{
-		Die::Die(unsigned int PlanesNoPerDie, unsigned int BlocksNoPerPlane, unsigned int PagesNoPerBlock) :
+		Die::Die(unsigned int PlanesNoPerDie, unsigned int BlocksNoPerPlane, unsigned int PagesNoPerBlock, unsigned int BadBlockRatio) :
 			Plane_no(PlanesNoPerDie),
 			Status(DieStatus::IDLE), CommandFinishEvent(NULL), Expected_finish_time(INVALID_TIME), RemainingSuspendedExecTime(INVALID_TIME),
 			CurrentCMD(NULL), SuspendedCMD(NULL), Suspended(false),
@@ -12,7 +12,7 @@ namespace NVM
 		{
 			Planes = new Plane*[PlanesNoPerDie];
 			for (unsigned int i = 0; i < PlanesNoPerDie; i++) {
-				Planes[i] = new Plane(BlocksNoPerPlane, PagesNoPerBlock);
+				Planes[i] = new Plane(BlocksNoPerPlane, PagesNoPerBlock, BadBlockRatio);
 			}
 		}
 

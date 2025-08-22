@@ -116,7 +116,7 @@ namespace SSD_Components
 
 		static NVM_PHY_ONFI_NVDDR2* _my_instance;
 		ONFI_Channel_NVDDR2** channels;
-		ChipBookKeepingEntry** bookKeepingTable;
+		ChipBookKeepingEntry** chipBookingTable;
 		Flash_Transaction_Queue *WaitingReadTX, *WaitingGCRead_TX, *WaitingMappingRead_TX;
 		std::list<DieBookKeepingEntry*> *WaitingCopybackWrites;
 	};
