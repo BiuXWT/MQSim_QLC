@@ -209,14 +209,14 @@ namespace SSD_Components
 			return;
 		}
 		//auto sqe = dynamic_cast<Submission_Queue_Entry*>(user_request->IO_command_info);
-		DEBUG_BIU((user_request->Type == UserRequestType::READ ? "READ" : "WRITE") << "#LBA:" << user_request->Start_LBA 
-			<< "#size:" << user_request->Size_in_byte << "bytes==" << user_request->SizeInSectors << "sectors" 
-			<< "#data:" << user_request->Data
-			<<"#stream_id:"<<user_request->Stream_id<<"#id:"<<user_request->ID);
+		// DEBUG_BIU((user_request->Type == UserRequestType::READ ? "READ" : "WRITE") << "#LBA:" << user_request->Start_LBA 
+		// 	<< "#size:" << user_request->Size_in_byte << "bytes==" << user_request->SizeInSectors << "sectors" 
+		// 	<< "#data:" << user_request->Data
+		// 	<<"#stream_id:"<<user_request->Stream_id<<"#id:"<<user_request->ID);
 		
 		for (auto it = user_request->Transaction_list.begin(); it != user_request->Transaction_list.end(); it++) {
 			auto tr = (*it);
-			DEBUG_BIU("tr_type="<<to_string(tr->Type)<<";tr_src_type="<<to_string(tr->Source))
+			// DEBUG_BIU("tr_type="<<to_string(tr->Type)<<";tr_src_type="<<to_string(tr->Source))
 		}
 
 		if (user_request->Type == UserRequestType::READ) {

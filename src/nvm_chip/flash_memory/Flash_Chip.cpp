@@ -132,7 +132,7 @@ namespace NVM
 				status = Internal_Status::BUSY;
 			}
 
-			DEBUG_BIU("Command execution started on channel: " << this->ChannelID << " chip: " << this->ChipID)
+			// DEBUG_BIU("Command execution started on channel: " << this->ChannelID << " chip: " << this->ChipID)
 		}
 
 		void Flash_Chip::finish_command_execution(Flash_Command* command)
@@ -159,52 +159,52 @@ namespace NVM
 				case CMD_READ_PAGE_MULTIPLANE:
 				case CMD_READ_PAGE_COPYBACK:
 				case CMD_READ_PAGE_COPYBACK_MULTIPLANE:
-					DEBUG_BIU("Channel " << this->ChannelID << " Chip " << this->ChipID << "- Finished executing read command")
+					// DEBUG_BIU("Channel " << this->ChannelID << " Chip " << this->ChipID << "- Finished executing read command")
 					for (unsigned int planeCntr = 0; planeCntr < command->Address.size(); planeCntr++) {
 						STAT_readCount++;
 						targetDie->Planes[command->Address[planeCntr].PlaneID]->Read_count++;
 						targetDie->Planes[command->Address[planeCntr].PlaneID]->Blocks[command->Address[planeCntr].BlockID]->Pages[command->Address[planeCntr].PageID].Read_metadata(command->Meta_data[planeCntr]);
-						DEBUG_BIU(" read metadata.LPA=" << (command->Meta_data[planeCntr].LPA == NO_LPA ? "NO_LPA" : std::to_string(command->Meta_data[planeCntr].LPA))
-							<< " address[" << command->Address[planeCntr].ChannelID << "]"
-							<< "[" << command->Address[planeCntr].ChipID << "]"
-							<< "[" << command->Address[planeCntr].DieID << "]"
-							<< "[" << command->Address[planeCntr].PlaneID << "]"
-							<< "[" << command->Address[planeCntr].BlockID << "]"
-							<< "[" << command->Address[planeCntr].PageID << "]");
+						// DEBUG_BIU(" read metadata.LPA=" << (command->Meta_data[planeCntr].LPA == NO_LPA ? "NO_LPA" : std::to_string(command->Meta_data[planeCntr].LPA))
+							// << " address[" << command->Address[planeCntr].ChannelID << "]"
+							// << "[" << command->Address[planeCntr].ChipID << "]"
+							// << "[" << command->Address[planeCntr].DieID << "]"
+							// << "[" << command->Address[planeCntr].PlaneID << "]"
+							// << "[" << command->Address[planeCntr].BlockID << "]"
+							// << "[" << command->Address[planeCntr].PageID << "]");
 					}
 					break;
 				case CMD_PROGRAM_PAGE:
 				case CMD_PROGRAM_PAGE_MULTIPLANE:
 				case CMD_PROGRAM_PAGE_COPYBACK:
 				case CMD_PROGRAM_PAGE_COPYBACK_MULTIPLANE:
-					DEBUG_BIU("Channel " << this->ChannelID << " Chip " << this->ChipID << "- Finished executing program command")
+					// DEBUG_BIU("Channel " << this->ChannelID << " Chip " << this->ChipID << "- Finished executing program command")
 					for (unsigned int planeCntr = 0; planeCntr < command->Address.size(); planeCntr++) {
 						STAT_progamCount++;
 						targetDie->Planes[command->Address[planeCntr].PlaneID]->Progam_count++;
 						targetDie->Planes[command->Address[planeCntr].PlaneID]->Blocks[command->Address[planeCntr].BlockID]->Pages[command->Address[planeCntr].PageID].Write_metadata(command->Meta_data[planeCntr]);
-						DEBUG_BIU(" write metadata.LPA=" << command->Meta_data[planeCntr].LPA
-							<< " address[" << command->Address[planeCntr].ChannelID << "]"
-							<< "[" << command->Address[planeCntr].ChipID << "]"
-							<< "[" << command->Address[planeCntr].DieID << "]"
-							<< "[" << command->Address[planeCntr].PlaneID << "]"
-							<< "[" << command->Address[planeCntr].BlockID << "]"
-							<< "[" << command->Address[planeCntr].PageID << "]");
+						// DEBUG_BIU(" write metadata.LPA=" << command->Meta_data[planeCntr].LPA
+							// << " address[" << command->Address[planeCntr].ChannelID << "]"
+							// << "[" << command->Address[planeCntr].ChipID << "]"
+							// << "[" << command->Address[planeCntr].DieID << "]"
+							// << "[" << command->Address[planeCntr].PlaneID << "]"
+							// << "[" << command->Address[planeCntr].BlockID << "]"
+							// << "[" << command->Address[planeCntr].PageID << "]");
 					}
 					break;
 				case CMD_ERASE_BLOCK:
 				case CMD_ERASE_BLOCK_MULTIPLANE:
 				{
-					DEBUG_BIU("Channel " << this->ChannelID << " Chip " << this->ChipID << "- Finished executing erase command");
+					// DEBUG_BIU("Channel " << this->ChannelID << " Chip " << this->ChipID << "- Finished executing erase command");
 					for (unsigned int planeCntr = 0; planeCntr < command->Address.size(); planeCntr++) {
 						STAT_eraseCount++;
 						targetDie->Planes[command->Address[planeCntr].PlaneID]->Erase_count++;
 						Block* targetBlock = targetDie->Planes[command->Address[planeCntr].PlaneID]->Blocks[command->Address[planeCntr].BlockID];
-						DEBUG_BIU(" erase block:"
-							<< "[" << command->Address[planeCntr].ChannelID << "]"
-							<< "[" << command->Address[planeCntr].ChipID << "]"
-							<< "[" << command->Address[planeCntr].DieID << "]"
-							<< "[" << command->Address[planeCntr].PlaneID << "]"
-							<< "[" << command->Address[planeCntr].BlockID << "]");
+						// DEBUG_BIU(" erase block:"
+							// << "[" << command->Address[planeCntr].ChannelID << "]"
+							// << "[" << command->Address[planeCntr].ChipID << "]"
+							// << "[" << command->Address[planeCntr].DieID << "]"
+							// << "[" << command->Address[planeCntr].PlaneID << "]"
+							// << "[" << command->Address[planeCntr].BlockID << "]");
 						for (unsigned int i = 0; i < page_no_per_block; i++) {
 							//targetBlock->Pages[i].Metadata.SourceStreamID = NO_STREAM;
 							//targetBlock->Pages[i].Metadata.Status = FREE_PAGE;
@@ -216,7 +216,7 @@ namespace NVM
 				default:
 					PRINT_ERROR("Flash chip " << ID() << ": unhandled flash command type!")
 			}
-			DEBUG_BIU(__func__);
+			// DEBUG_BIU(__func__);
 			//In MQSim, flash chips always announce their status using the ready/busy signal; the controller does not issue a die status read command
 			broadcast_ready_signal(command);
 		}

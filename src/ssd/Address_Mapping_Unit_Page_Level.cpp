@@ -29,15 +29,15 @@ namespace SSD_Components
 		LPA_type key = LPN_TO_UNIQUE_KEY(streamID, lpa);
 		auto it = addressMap.find(key);
 		if (it == addressMap.end()) {//没找到
-			DEBUG_BIU("Address mapping table query - Stream ID:" << streamID << ", LPA:" << lpa << ", MISS")
+			// DEBUG_BIU("Address mapping table query - Stream ID:" << streamID << ", LPA:" << lpa << ", MISS")
 				return false;
 		}
 		if (it->second->Status != CMTEntryStatus::VALID) { // waiting或者free
-			DEBUG_BIU("Address mapping table query - Stream ID:" << streamID << ", LPA:" << lpa << ", MISS")
+			// DEBUG_BIU("Address mapping table query - Stream ID:" << streamID << ", LPA:" << lpa << ", MISS")
 			return false;
 		}
 
-		DEBUG_BIU("Address mapping table query - Stream ID:" << streamID << ", LPA:" << lpa << ", HIT")
+		// DEBUG_BIU("Address mapping table query - Stream ID:" << streamID << ", LPA:" << lpa << ", HIT")
 		return true;
 	}
 
@@ -219,6 +219,10 @@ namespace SSD_Components
 			GlobalTranslationDirectory[i].MPPN = (MPPN_type)NO_MPPN;
 			GlobalTranslationDirectory[i].TimeStamp = INVALID_TIME_STAMP;
 		}
+		DEBUG_BIU("max_logical_sector_address:"<< max_logical_sector_address);//最大逻辑扇区地址
+		DEBUG_BIU("Total_logical_pages_no:"<< Total_logical_pages_no);//总的逻辑页数
+		DEBUG_BIU("Total_physical_pages_no:"<< Total_physical_pages_no);//总的物理页数
+		DEBUG_BIU("Total_translation_pages_no:"<< Total_translation_pages_no);//总的翻译页数
 	}
 
 	AddressMappingDomain::~AddressMappingDomain()
@@ -487,7 +491,7 @@ namespace SSD_Components
 	{
 		for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin(); it != transactionList.end(); ) {
 			auto tr = (NVM_Transaction_Flash*)(*it);
-			DEBUG_BIU("address:"<<tr->Address <<"LPA:" << tr->LPA << "||PPA:" << tr->PPA << "||Physical_address_determined:" << tr->Physical_address_determined);
+			// DEBUG_BIU("address:"<<tr->Address <<"LPA:" << tr->LPA << "||PPA:" << tr->PPA << "||Physical_address_determined:" << tr->Physical_address_determined);
 			
 			if (is_lpa_locked_for_gc((*it)->Stream_id, ((NVM_Transaction_Flash*)(*it))->LPA)) {
 				//判断LPA是否被GC占用，如果LPA被GC锁定，则交由屏障处理；
@@ -495,7 +499,7 @@ namespace SSD_Components
 				manage_user_transaction_facing_barrier((NVM_Transaction_Flash*)*(it++));
 			} else {
 				query_cmt((NVM_Transaction_Flash*)(*it++));
-				DEBUG_BIU("tr->address:" << tr->Address << "LPA:" << tr->LPA << "||PPA:" << tr->PPA << "||Physical_address_determined:" << tr->Physical_address_determined);
+				// DEBUG_BIU("tr->address:" << tr->Address << "LPA:" << tr->LPA << "||PPA:" << tr->PPA << "||Physical_address_determined:" << tr->Physical_address_determined);
 			}
 		}
 
@@ -542,13 +546,13 @@ namespace SSD_Components
 				Stats::writeTR_CMT_hits_per_stream[stream_id]++;
 			}
 
-			DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
+			// DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
 			if (translate_lpa_to_ppa(stream_id, transaction)) {
-				DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
+				// DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
 				return true;
 			} else {
 				manage_unsuccessful_translation(transaction);
-				DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
+				// DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
 				return false;
 			}
 		} else {//CMT中不存在LPA，即CMT中不是全量数据
@@ -568,14 +572,14 @@ namespace SSD_Components
 					Stats::writeTR_CMT_miss++;
 					Stats::writeTR_CMT_miss_per_stream[stream_id]++;
 				}
-				DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
+				// DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
 				if (translate_lpa_to_ppa(stream_id, transaction)) {
 					return true;
 				} else {
 					manage_unsuccessful_translation(transaction);
 					return false;
 				}
-				DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
+				// DEBUG_BIU("LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
 			} else {
 				if (transaction->Type == Transaction_Type::READ) {
 					Stats::total_readTR_CMT_queries++;
@@ -590,6 +594,7 @@ namespace SSD_Components
 					Stats::writeTR_CMT_miss_per_stream[stream_id]++;
 					domains[stream_id]->Waiting_unmapped_program_transactions.insert(std::pair<LPA_type, NVM_Transaction_Flash*>(transaction->LPA, transaction));
 				}
+				// DEBUG_BIU("waiting LPA:" << transaction->LPA << "---PPA:" << transaction->PPA);
 			}
 
 			return false;
@@ -1010,7 +1015,7 @@ namespace SSD_Components
 			default:
 				PRINT_ERROR("Unknown plane allocation scheme type!")
 		}
-		DEBUG_BIU("pretarget:"<<targetAddress);
+		// DEBUG_BIU("pretarget:"<<targetAddress);
 	}
 
 	void Address_Mapping_Unit_Page_Level::allocate_plane_for_user_write(NVM_Transaction_Flash_WR* transaction)
@@ -1170,7 +1175,7 @@ namespace SSD_Components
 			default:
 				PRINT_ERROR("Unknown plane allocation scheme type!")
 		}
-		DEBUG_BIU("usertarget:"<<targetAddress);
+		// DEBUG_BIU("usertarget:"<<targetAddress);
 	}
 
 	void Address_Mapping_Unit_Page_Level::allocate_page_in_plane_for_user_write(NVM_Transaction_Flash_WR* transaction, bool is_for_gc)
@@ -1411,7 +1416,7 @@ namespace SSD_Components
 			default:
 				PRINT_ERROR("Unknown plane allocation scheme type!")
 		}
-		DEBUG_BIU("onlineread:"<<read_address);
+		// DEBUG_BIU("onlineread:"<<read_address);
 
 		block_manager->Allocate_block_and_page_in_plane_for_user_write(stream_id, read_address);
 		PPA_type ppa = Convert_address_to_ppa(read_address);

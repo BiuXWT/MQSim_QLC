@@ -67,6 +67,7 @@
 			<Page_No_Per_Block>256</Page_No_Per_Block>
 			<Page_Capacity>8192</Page_Capacity>
 			<Page_Metadat_Capacity>448</Page_Metadat_Capacity>
+			<Init_Bad_Block_Ratio>4</Init_Bad_Block_Ratio>
 		</Flash_Parameter_Set>
 	</Device_Parameter_Set>
 </Execution_Parameter_Set>
