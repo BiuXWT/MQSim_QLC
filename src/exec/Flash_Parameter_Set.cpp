@@ -23,7 +23,7 @@ unsigned int Flash_Parameter_Set::Block_No_Per_Plane = 2048;
 unsigned int Flash_Parameter_Set::Page_No_Per_Block = 256;//Page no per block
 unsigned int Flash_Parameter_Set::Page_Capacity = 8192;//Flash page capacity in bytes
 unsigned int Flash_Parameter_Set::Page_Metadat_Capacity = 448;//Flash page capacity in bytes
-unsigned int Flash_Parameter_Set::Init_Bad_Block_Ratio = 1;
+unsigned int Flash_Parameter_Set::Init_Bad_Block_Ratio = 2;//Initial bad block ratio in percentage
 
 void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 {

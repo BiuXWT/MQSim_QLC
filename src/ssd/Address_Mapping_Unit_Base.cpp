@@ -1,4 +1,4 @@
-#include "FTL.h"
+ï»¿#include "FTL.h"
 #include "Address_Mapping_Unit_Base.h"
 #include "NVM_PHY_ONFI_NVDDR2.h"
 #include "Flash_Block_Manager_Base.h"
@@ -22,7 +22,7 @@ namespace SSD_Components
 		page_no_per_chip = page_no_per_die * die_no_per_chip;
 		page_no_per_channel = page_no_per_chip * chip_no_per_channel;
 		total_physical_pages_no = page_no_per_channel * ChannelCount;
-		total_logical_pages_no = (unsigned int)((double)total_physical_pages_no * (1 - overprovisioning_ratio));//Áô³öÈßÓàpage
+		total_logical_pages_no = (unsigned int)((double)total_physical_pages_no * (1 - overprovisioning_ratio));//ç•™å‡ºå†—ä½™page
 		max_logical_sector_address = (LHA_type)(SectorsPerPage * total_logical_pages_no - 1);
 	}
 

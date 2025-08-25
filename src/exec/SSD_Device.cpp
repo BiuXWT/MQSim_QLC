@@ -36,7 +36,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		sim_time_type *read_latencies, *write_latencies;
 		sim_time_type average_flash_read_latency = 0, average_flash_write_latency = 0; //Required for FTL initialization
 
-		//Step 1: create memory chips (flash chips in our case)
+		//第 1 步：创建存储芯片（在我们的例子中为闪存芯片）
 		switch (parameters->Flash_Parameters.Flash_Technology)
 		{
 		case Flash_Technology_Type::SLC:
@@ -88,7 +88,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 			throw std::invalid_argument("The specified flash technologies is not supported");
 		}
 
-		//Step 2: create memory channels to connect chips to the controller
+		//第 2 步：创建内存通道以将芯片连接到控制器
 		this->Channel_count = parameters->Flash_Channel_Count;
 		this->Chip_no_per_channel = parameters->Chip_No_Per_Channel;
 		switch (parameters->Flash_Comm_Protocol)
@@ -96,25 +96,27 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		case SSD_Components::ONFI_Protocol::NVDDR2:
 		{
 			SSD_Components::ONFI_Channel_NVDDR2 **channels = new SSD_Components::ONFI_Channel_NVDDR2 *[parameters->Flash_Channel_Count];
-			for (unsigned int channel_cntr = 0; channel_cntr < parameters->Flash_Channel_Count; channel_cntr++)
+			for (unsigned int channel_cntr = 0; channel_cntr < parameters->Flash_Channel_Count; channel_cntr++)//channel 数量
 			{
 				NVM::FlashMemory::Flash_Chip **chips = new NVM::FlashMemory::Flash_Chip *[parameters->Chip_No_Per_Channel];
-				for (unsigned int chip_cntr = 0; chip_cntr < parameters->Chip_No_Per_Channel; chip_cntr++)
-				{
+				for (unsigned int chip_cntr = 0; chip_cntr < parameters->Chip_No_Per_Channel; chip_cntr++)//每个channel的chip数量
+				{	
+					//创建Flash Chips
 					chips[chip_cntr] = new NVM::FlashMemory::Flash_Chip(device->ID() + ".Channel." + std::to_string(channel_cntr) + ".Chip." + std::to_string(chip_cntr),
 																		channel_cntr, chip_cntr, parameters->Flash_Parameters.Flash_Technology, parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die,
 																		parameters->Flash_Parameters.Block_No_Per_Plane, parameters->Flash_Parameters.Page_No_Per_Block,parameters->Flash_Parameters.Init_Bad_Block_Ratio,
 																		read_latencies, write_latencies, parameters->Flash_Parameters.Block_Erase_Latency,
 																		parameters->Flash_Parameters.Suspend_Program_Time, parameters->Flash_Parameters.Suspend_Erase_Time);
-					Simulator->AddObject(chips[chip_cntr]); //Each simulation object (a child of MQSimEngine::Sim_Object) should be added to the engine
+					Simulator->AddObject(chips[chip_cntr]); //每个模拟对象（MQSimEngine：：Sim_Object 的子对象）都应添加到引擎中
 				}
+				//创建Channel,并将chips和channel连接
 				channels[channel_cntr] = new SSD_Components::ONFI_Channel_NVDDR2(channel_cntr, parameters->Chip_No_Per_Channel,
 																				 chips, parameters->Flash_Channel_Width,
 																				 (sim_time_type)((double)1000 / parameters->Channel_Transfer_Rate) * 2, (sim_time_type)((double)1000 / parameters->Channel_Transfer_Rate) * 2);
-				device->Channels.push_back(channels[channel_cntr]); //Channels should not be added to the simulator core, they are passive object that do not handle any simulation event
+				device->Channels.push_back(channels[channel_cntr]); //通道不应添加到模拟器核心，它们是不处理任何模拟事件的被动对象
 			}
 
-			//Step 3: create channel controller and connect channels to it
+			//第 3 步：创建通道控制器并将通道连接到它
 			device->PHY = new SSD_Components::NVM_PHY_ONFI_NVDDR2(device->ID() + ".PHY", channels, parameters->Flash_Channel_Count, parameters->Chip_No_Per_Channel,
 																  parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die);
 			Simulator->AddObject(device->PHY);
@@ -126,7 +128,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		delete[] read_latencies;
 		delete[] write_latencies;
 
-		//Steps 4 - 8: create FTL components and connect them together
+		//步骤 4 - 8：创建 FTL 组件并将它们连接在一起
 		SSD_Components::FTL *ftl = new SSD_Components::FTL(device->ID() + ".FTL", NULL, parameters->Flash_Channel_Count,
 														   parameters->Chip_No_Per_Channel, parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die,
 														   parameters->Flash_Parameters.Block_No_Per_Plane, parameters->Flash_Parameters.Page_No_Per_Block,
@@ -136,7 +138,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		Simulator->AddObject(ftl);
 		device->Firmware = ftl;
 
-		//Step 5: create TSU(Transaction Scheduling Unit)事务调度单元
+		//步骤5：创建TSU（Transaction Scheduling Unit）事务调度单元
 		SSD_Components::TSU_Base *tsu;
 		bool erase_suspension = false, program_suspension = false;
 		if (parameters->Flash_Parameters.CMD_Suspension_Support == NVM::FlashMemory::Command_Suspension_Mode::PROGRAM)
@@ -196,7 +198,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		Simulator->AddObject(tsu);
 		ftl->TSU = tsu;
 
-		//Step 6: create Flash_Block_Manager
+		//第 6 步：创建Flash_Block_Manager 块管理
 		SSD_Components::Flash_Block_Manager_Base *fbm;
 		fbm = new SSD_Components::Flash_Block_Manager(NULL, parameters->Flash_Parameters.Block_PE_Cycles_Limit,
 													  (unsigned int)io_flows->size(), parameters->Flash_Channel_Count, parameters->Chip_No_Per_Channel,
@@ -204,7 +206,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 													  parameters->Flash_Parameters.Block_No_Per_Plane, parameters->Flash_Parameters.Page_No_Per_Block);
 		ftl->BlockManager = fbm;
 
-		//Step 7: create Address_Mapping_Unit
+		//Step 7: create Address_Mapping_Unit 地址映射单元
 		SSD_Components::Address_Mapping_Unit_Base *amu;
 		std::vector<std::vector<flash_channel_ID_type>> flow_channel_id_assignments;
 		std::vector<std::vector<flash_chip_ID_type>> flow_chip_id_assignments;
@@ -307,7 +309,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		Simulator->AddObject(amu);
 		ftl->Address_Mapping_Unit = amu;
 
-		//Step 8: create GC_and_WL_unit
+		//第 8 步：创建 GC_and_WL_unit
 		double max_rho = 0;
 		for (unsigned int i = 0; i < io_flows->size(); i++)
 		{
@@ -316,7 +318,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 				max_rho = (*io_flows)[i]->Initial_Occupancy_Percentage;
 			}
 		}
-		max_rho /= 100; //Convert from percentage to a value between zero and 1
+		max_rho /= 100; //从百分比转换为介于 0 和 1 之间的值
 		SSD_Components::GC_and_WL_Unit_Base *gcwl;
 		gcwl = new SSD_Components::GC_and_WL_Unit_Page_Level(ftl->ID() + ".GCandWLUnit", amu, fbm, tsu, (SSD_Components::NVM_PHY_ONFI *)device->PHY,
 															 parameters->GC_Block_Selection_Policy, parameters->GC_Exec_Threshold, parameters->Preemptible_GC_Enabled, parameters->GC_Hard_Threshold,
@@ -329,7 +331,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		fbm->Set_GC_and_WL_Unit(gcwl);
 		ftl->GC_and_WL_Unit = gcwl;
 
-		//Step 9: create Data_Cache_Manager
+		//第 9 步：创建Data_Cache_Manager
 		SSD_Components::Data_Cache_Manager_Base *dcm;
 		SSD_Components::Caching_Mode *caching_modes = new SSD_Components::Caching_Mode[io_flows->size()];
 		for (unsigned int i = 0; i < io_flows->size(); i++)
@@ -364,7 +366,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		ftl->Data_cache_manager = dcm;
 		device->Cache_manager = dcm;
 
-		//Step 10: create Host_Interface
+		//第 10 步：创建Host_Interface
 		switch (parameters->HostInterface_Type)
 		{
 		case HostInterface_Types::NVME:

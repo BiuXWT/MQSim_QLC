@@ -85,7 +85,7 @@ namespace MQSimEngine
 			if (_EventList->Count == 0 || stop) {
 				break;
 			}
-			DEBUG_BIU("start=============================================================");
+			// DEBUG_BIU("start=============================================================");
 
 			EventTreeNode* minNode = _EventList->Get_min_node();
 			ev = minNode->FirstSimEvent;
@@ -93,20 +93,20 @@ namespace MQSimEngine
 			_sim_time = ev->Fire_time;
 
 			while (ev != NULL) {
-				DEBUG_BIU("start+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+				// DEBUG_BIU("start+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 				if(!ev->Ignore) {
-					DEBUG_BIU("Event: " << "firetime:" << ev->Fire_time << " " << ev->Target_sim_object->ID());
+					// DEBUG_BIU("Event: " << "firetime:" << ev->Fire_time << " " << ev->Target_sim_object->ID());
 					ev->Target_sim_object->Execute_simulator_event(ev);
 				}else{
-					DEBUG_BIU("IgnoreEvent: " << "firetime:" << ev->Fire_time << " " << ev->Target_sim_object->ID());
+					// DEBUG_BIU("IgnoreEvent: " << "firetime:" << ev->Fire_time << " " << ev->Target_sim_object->ID());
 				}
 				Sim_Event* consumed_event = ev;
-				DEBUG_BIU("end+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+				// DEBUG_BIU("end+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 				ev = ev->Next_event;
 				delete consumed_event;
 			}
 			_EventList->Remove(minNode);
-			DEBUG_BIU("end=============================================================");
+			// DEBUG_BIU("end=============================================================");
 		}
 	}
 
@@ -128,9 +128,9 @@ namespace MQSimEngine
 	Sim_Event* Engine::Register_sim_event(sim_time_type fireTime, Sim_Object* targetObject, void* parameters, int type)
 	{
 		Sim_Event* ev = new Sim_Event(fireTime, targetObject, parameters, type);
-		DEBUG("RegisterEvent " << "firetime:" << fireTime << " " << targetObject->ID());
+		// DEBUG("RegisterEvent " << "firetime:" << fireTime << " " << targetObject->ID());
 		if (targetObject->ID().find("PHY") !=std::string::npos) {
-			DEBUG_BIU("RegisterEvent " << "firetime:" << fireTime << " " << targetObject->ID());
+			// DEBUG_BIU("RegisterEvent " << "firetime:" << fireTime << " " << targetObject->ID());
 		}
 		_EventList->Insert_sim_event(ev);
 		return ev;

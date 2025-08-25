@@ -164,10 +164,10 @@ namespace SSD_Components
 		flash_plane_ID_type* Plane_ids;
 		unsigned int Plane_no;
 
-		LHA_type max_logical_sector_address;
-		LPA_type Total_logical_pages_no;
-		PPA_type Total_physical_pages_no;
-		MVPN_type Total_translation_pages_no;
+		LHA_type max_logical_sector_address;//最大逻辑扇区地址
+		LPA_type Total_logical_pages_no;//总的逻辑页数
+		PPA_type Total_physical_pages_no;//总的物理页数
+		MVPN_type Total_translation_pages_no;//总的翻译页数
 	};
 
 	class Address_Mapping_Unit_Page_Level : public Address_Mapping_Unit_Base

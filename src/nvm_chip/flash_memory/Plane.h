@@ -15,6 +15,7 @@ namespace NVM
 		private:
 			uint8_t Bad_block_ratio;
 			void set_ramdom_bad_block();
+			std::vector<int> bad_block_ids;
 
 		public:
 			Plane(unsigned int BlocksNoPerPlane, unsigned int PagesNoPerBlock, unsigned int BadBlockRatio);
